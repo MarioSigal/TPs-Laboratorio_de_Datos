@@ -101,7 +101,6 @@ df_R_Produce = pd.DataFrame(columns=['nombre_establecimiento', 'razón_social', 
 
 
 # Limpieza
-
 limpieza_clae = """
                 SELECT DISTINCT clae2, clae2_desc, clae3, clae3_desc
                 FROM clae
@@ -117,10 +116,11 @@ limpieza_provincia = """
                      """
 df_Provincia= sql^limpieza_provincia
 
+
 limpieza_departamento1 = """
-                         SELECT DISTINCT codigo_indec_departamento AS id, nombre_departamento AS nombre, codigo_indec_provincia AS id_provincia
+                         SELECT DISTINCT codigo_indec_departamento AS id_departamento, nombre_departamento AS nombre, codigo_indec_provincia AS id_provincia
                          FROM localidades                         
-                         ORDER BY id_provincia ASC, id ASC
+                         ORDER BY id_provincia ASC, id_departamento ASC
                         """
 df_Departamento = sql^limpieza_departamento1
 
@@ -128,24 +128,33 @@ df_Departamento = sql^limpieza_departamento1
 # a las comunas como CABA y su índice será el mayor de los que aparecía
 
 limpieza_departamento2 = """
-                         SELECT REPLACE(id,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02015') as id,
+                         SELECT REPLACE(id_departamento,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02015') as id_departamento,
                          REPLACE(nombre,'Comuna 1,Comuna 10,Comuna 11,Comuna 12,Comuna 13,Comuna 14,Comuna 15,Comuna 2,Comuna 3,Comuna 4,Comuna 5,Comuna 6,Comuna 7,Comuna 8,Comuna 9', 'CABA') as nombre, 
                          id_provincia
                          FROM df_Departamento                         
-                         ORDER BY id_provincia ASC, id ASC
-                        """
+                         ORDER BY id_provincia ASC, id_departamento ASC
+                         """
 
 df_Departamento = sql^limpieza_departamento2
 
 
-limpieza_estableciminento1= """
-SELECT "razón social" AS razón_social, REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento
-FROM operadores_organicos
-"""
+limpieza_estableciminento2= """
+                            SELECT REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento, "razón social" AS razón_social, departamento, provincia_id
+                            FROM operadores_organicos
+                            """
+df_organico_1 = sql^limpieza_estableciminento2      
 
+limpieza_estableciminento1= """
+                            SELECT  establecimiento,  razón_social, id_departamento
+                            FROM df_organico_1
+                            INNER JOIN df_Departamento
+                            ON UPPER(nombre) = departamento  AND id_provincia = provincia_id  
+                            
+                            """
+#tenemos que conseguir una tabla sin con las localidades(nombre_aglomerado)(nombre_geografico) que no tienen el nombre igual a algun nombre de departamento.loc para ver si son iguales a departamento.op y hacer ON UPPER(nombre_departamento.loc) = departamento.op or UPPER(otros nombres.loc) = departamento.op AND id_provincia = provincia_id  
 df_Operadores_organicos= sql^limpieza_estableciminento1
 
-
+              
 
 # Ejercicio h) ii)
 # =============================================================================
