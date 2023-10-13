@@ -94,12 +94,12 @@ provincia_producto4= sql^consultaSQL4
 
 # Ejercicio e)
 
-df_Operadores_organicos = pd.DataFrame(columns=['nombre_establecimiento', 'razón_social', 'rubro', 'id_departamento', 'clae6'])
-df_Producto = pd.DataFrame(columns=['nombre']) 
+df_Operadores_organicos = pd.DataFrame(columns=['nombre_establecimiento', 'razón_social', 'rubro', 'id_departamento'])
+df_Producto = pd.DataFrame(columns=['nombre', 'clae3']) 
 df_Departamento = pd.DataFrame(columns=['id', 'nombre', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'nombre'])
 df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'proporción_mujeres', 'clae6'])
-df_CLAE = pd.DataFrame(columns=['clae6', 'clae2'])
+df_CLAE = pd.DataFrame(columns=['clae3','clae2'])
 # relación entre operadores orgánicos y producto
 df_R_Produce = pd.DataFrame(columns=['nombre_establecimiento', 'razón_social', 'nombre_producto'])
 
