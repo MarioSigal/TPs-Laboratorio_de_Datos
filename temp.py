@@ -138,6 +138,15 @@ limpieza_departamento2 = """
 df_Departamento = sql^limpieza_departamento2
 
 
+limpieza_estableciminento1= """
+SELECT "razón social" AS razón_social, REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento
+FROM operadores_organicos
+"""
+
+df_Operadores_organicos= sql^limpieza_estableciminento1
+
+
+
 # Ejercicio h) ii)
 # =============================================================================
 # ¿Cuál es el CLAE2 más frecuente en establecimientos productivos?
