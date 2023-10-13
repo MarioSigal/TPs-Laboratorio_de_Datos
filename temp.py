@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 import pandas as pd
 from inline_sql import sql, sql_val
 
-operadores_organicos= pd.read_csv('padron-de-operadores-organicos-certificados.csv')
+
+
+operadores_organicos= pd.read_csv('./TablasOriginales/padron-de-operadores-organicos-certificados.csv')
 # =============================================================================
 #
 # Listado de operadores orgánicos certificados:
@@ -18,7 +14,7 @@ operadores_organicos= pd.read_csv('padron-de-operadores-organicos-certificados.c
 
 
 
-establecimientos_productivos = pd.read_csv('distribucion_establecimientos_productivos_sexo.csv')
+establecimientos_productivos = pd.read_csv('./TablasOriginales/distribucion_establecimientos_productivos_sexo.csv')
 # =============================================================================
 #
 # Distribución geográfica de los establecimientos productivos.
@@ -28,7 +24,7 @@ establecimientos_productivos = pd.read_csv('distribucion_establecimientos_produc
 #
 # =============================================================================
 
-localidades = pd.read_csv('localidad_bahra.csv')
+localidades = pd.read_csv('./TablasOriginales/localidad_bahra.csv')
 # =============================================================================
 #
 # Localidades de la Base de Asentamientos Humanos de la República Argentina
@@ -42,7 +38,7 @@ localidades = pd.read_csv('localidad_bahra.csv')
 # 
 # =============================================================================
 
-clae = pd.read_csv('clae_agg.csv')
+clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
 # =============================================================================
 # 
@@ -99,9 +95,48 @@ df_Producto = pd.DataFrame(columns=['nombre', 'clae3'])
 df_Departamento = pd.DataFrame(columns=['id', 'nombre', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'nombre'])
 df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'proporción_mujeres', 'clae6'])
-df_CLAE = pd.DataFrame(columns=['clae3','clae2'])
+df_CLAE = pd.DataFrame(columns=['clae2', 'clae2_desc','clae3','clae3_desc'])
 # relación entre operadores orgánicos y producto
 df_R_Produce = pd.DataFrame(columns=['nombre_establecimiento', 'razón_social', 'nombre_producto'])
+
+
+# Limpieza
+
+limpieza_clae = """
+                SELECT DISTINCT clae2, clae2_desc, clae3, clae3_desc
+                FROM clae
+                WHERE letra == 'A' or (letra == 'C' and clae2 == 10)
+                ORDER BY clae2 ASC, clae3 ASC
+              """
+df_CLAE = sql^limpieza_clae
+
+limpieza_provincia = """
+                       SELECT DISTINCT codigo_indec_provincia AS id, nombre_provincia AS nombre
+                       FROM localidades
+                       ORDER BY id ASC
+                     """
+df_Provincia= sql^limpieza_provincia
+
+limpieza_departamento1 = """
+                         SELECT DISTINCT codigo_indec_departamento AS id, nombre_departamento AS nombre, codigo_indec_provincia AS id_provincia
+                         FROM localidades                         
+                         ORDER BY id_provincia ASC, id ASC
+                        """
+df_Departamento = sql^limpieza_departamento1
+
+# Nos aparecieron todas las comunas de CABA juntas por lo que vamos a renombrar
+# a las comunas como CABA y su índice será el mayor de los que aparecía
+
+limpieza_departamento2 = """
+                         SELECT REPLACE(id,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02015') as id,
+                         REPLACE(nombre,'Comuna 1,Comuna 10,Comuna 11,Comuna 12,Comuna 13,Comuna 14,Comuna 15,Comuna 2,Comuna 3,Comuna 4,Comuna 5,Comuna 6,Comuna 7,Comuna 8,Comuna 9', 'CABA') as nombre, 
+                         id_provincia
+                         FROM df_Departamento                         
+                         ORDER BY id_provincia ASC, id ASC
+                        """
+
+df_Departamento = sql^limpieza_departamento2
+
 
 # Ejercicio h) ii)
 # =============================================================================
