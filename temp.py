@@ -53,7 +53,7 @@ clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
 # Ejercicio e)
 
-df_Operadores_organicos = pd.DataFrame(columns=['establecimiento', 'razón_social', 'departamento', 'id_departamento'])
+df_Operadores_organicos = pd.DataFrame(columns=['establecimiento', 'razón_social', 'departamento', 'id_provincia', 'id_departamento'])
 df_Producto = pd.DataFrame(columns=['producto', 'clae3']) 
 df_Departamento = pd.DataFrame(columns=['id', 'departamento', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'provincia'])
@@ -68,8 +68,9 @@ df_Relacion_Produce = pd.DataFrame(columns=['establecimiento', 'razón_social', 
 # Limpieza
 
 limpieza_operadores_organicos = """
-                                SELECT REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento, 'razón social' AS razón_social,
-                                    departamento, REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(productos,':',','), ' Y ',', '),'+',','),'-',','),'?',',') AS productos
+                                SELECT REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento, "razón social" AS razón_social,
+                                    departamento, REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(productos,':',','), ' Y ',', '),'+',','),'-',','),'?',',') AS productos,
+                                    provincia_id AS id_provincia
                                 FROM operadores_organicos;
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
@@ -83,7 +84,7 @@ operadores_organicos = sql^limpieza_operadores_organicos
 
 
 limpieza_operadores_organicos = """
-                                SELECT establecimiento, razón_social, departamento, REPLACE(REPLACE(REPLACE(producto, '(', ''), ')', ''), '.', '') AS producto
+                                SELECT establecimiento, razón_social, departamento, id_provincia, REPLACE(REPLACE(REPLACE(producto, '(', ''), ')', ''), '.', '') AS producto
                                 FROM operadores_organicos
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
@@ -101,7 +102,7 @@ localidades = sql^limpieza_localidades   # Nos aparecieron todas las comunas de 
 
 limpieza_localidades = """
                        SELECT id_departamento, id_provincia, provincia,
-                       REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(UPPER(departamento),'Á','A'),'É','E'),'Í','I'),'Ó','O'),'Ú','U') AS departamento
+                           REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(UPPER(departamento),'Á','A'),'É','E'),'Í','I'),'Ó','O'),'Ú','U') AS departamento
                        FROM localidades
                        """
 localidades = sql^limpieza_localidades
@@ -127,7 +128,7 @@ clae = sql^limpieza_clae
 # Armado
                                
 armado_operadores_organicos = """
-                                SELECT DISTINCT establecimiento, razón_social, departamento
+                                SELECT DISTINCT establecimiento, razón_social, departamento, id_provincia
                                 FROM operadores_organicos
                                 """
 df_Operadores_organicos = sql^armado_operadores_organicos      
@@ -169,6 +170,16 @@ df_CLAE = sql^armado_clae
  
 
 # Relaciones entre entidades
+
+relacion_o_o_esta_depto = """
+                            SELECT oo.*, id AS id_departamento
+                            FROM df_Operadores_organicos AS oo
+                            LEFT OUTER JOIN df_Departamento AS dep
+                            ON oo.departamento = dep.departamento AND oo.id_provincia = dep.id_provincia
+                            """
+
+df_Operadores_organicos= sql^relacion_o_o_esta_depto
+
 
 
 # Ejercicio h) ii)
