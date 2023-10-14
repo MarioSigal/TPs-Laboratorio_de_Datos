@@ -75,6 +75,19 @@ limpieza_operadores_organicos = """
 operadores_organicos = sql^limpieza_operadores_organicos
 
 
+limpieza_operadores_organicos = """
+                                SELECT *, TRIM(UNNEST( string_to_array(productos, ','))) AS producto
+                                FROM operadores_organicos
+                                """
+operadores_organicos = sql^limpieza_operadores_organicos
+
+
+limpieza_operadores_organicos = """
+                                SELECT establecimiento, razón_social, departamento, REPLACE(REPLACE(REPLACE(producto, '(', ''), ')', ''), '.', '') AS producto
+                                FROM operadores_organicos
+                                """
+operadores_organicos = sql^limpieza_operadores_organicos
+
 limpieza_localidades = """
                         SELECT DISTINCT REPLACE(codigo_indec_departamento,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02015') AS id_departamento,
                             REPLACE(nombre_departamento,'Comuna 1,Comuna 10,Comuna 11,Comuna 12,Comuna 13,Comuna 14,Comuna 15,Comuna 2,Comuna 3,Comuna 4,Comuna 5,Comuna 6,Comuna 7,Comuna 8,Comuna 9', 'CABA') AS departamento,
@@ -112,7 +125,7 @@ df_Operadores_organicos = sql^armado_operadores_organicos
 
 
 armado_producto = """
-                 SELECT DISTINCT TRIM(UNNEST( string_to_array(productos, ','))) AS producto
+                 SELECT DISTINCT producto
                  FROM operadores_organicos
                  """
 df_Producto = sql^armado_producto      #borarr los paréntesis 
