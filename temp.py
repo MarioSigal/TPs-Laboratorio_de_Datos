@@ -88,14 +88,23 @@ limpieza_operadores_organicos = """
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
 
+
 limpieza_localidades = """
-                        SELECT DISTINCT REPLACE(codigo_indec_departamento,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02015') AS id_departamento,
-                            REPLACE(nombre_departamento,'Comuna 1,Comuna 10,Comuna 11,Comuna 12,Comuna 13,Comuna 14,Comuna 15,Comuna 2,Comuna 3,Comuna 4,Comuna 5,Comuna 6,Comuna 7,Comuna 8,Comuna 9', 'CABA') AS departamento,
+                        SELECT DISTINCT REPLACE(codigo_indec_departamento,'02001,02002,02003,02004,02005,02006,02007,02008,02009,02010,02011,02012,02013,02014,02015', '02001') AS id_departamento,
+                            REPLACE(nombre_departamento,'Comuna 1,Comuna 10,Comuna 11,Comuna 12,Comuna 13,Comuna 14,Comuna 15,Comuna 2,Comuna 3,Comuna 4,Comuna 5,Comuna 6,Comuna 7,Comuna 8,Comuna 9', 'CIUDAD AUTONOMA BUENOS AIRES') AS departamento,
                             codigo_indec_provincia AS id_provincia, nombre_provincia AS provincia
                         FROM localidades                         
                         ORDER BY id_provincia ASC, id_departamento ASC
                         """
 localidades = sql^limpieza_localidades   # Nos aparecieron todas las comunas de CABA juntas por lo que vamos a renombrar a las comunas como CABA y su índice será el mayor de los que aparecía
+
+
+limpieza_localidades = """
+                       SELECT id_departamento, id_provincia, provincia,
+                       REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(UPPER(departamento),'Á','A'),'É','E'),'Í','I'),'Ó','O'),'Ú','U') AS departamento
+                       FROM localidades
+                       """
+localidades = sql^limpieza_localidades
 
 
 limpieza_establecimiento_productivo = """
@@ -118,7 +127,7 @@ clae = sql^limpieza_clae
 # Armado
                                
 armado_operadores_organicos = """
-                                SELECT establecimiento, razón_social, departamento
+                                SELECT DISTINCT establecimiento, razón_social, departamento
                                 FROM operadores_organicos
                                 """
 df_Operadores_organicos = sql^armado_operadores_organicos      
