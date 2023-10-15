@@ -153,7 +153,7 @@ localidades = sql^limpieza_localidades
 limpieza_clae = """
                 SELECT DISTINCT clae3, clae3_desc, clae2, clae2_desc
                 FROM clae
-                WHERE letra = 'A' or (letra = 'C' and clae2 in (10,11,12))
+                WHERE letra = 'A' or (letra = 'C' and clae2 in (10,11,21))
                 ORDER BY clae2 ASC, clae3 ASC
               """
 clae = sql^limpieza_clae
@@ -217,17 +217,6 @@ df_Operadores_organicos = sql^armado_operadores_organicos
 
 # =============================================================================
 
-# Armado dataframe de producto
-# =============================================================================
-armado_producto = """
-                 SELECT DISTINCT producto
-                 FROM operadores_organicos
-                 """
-df_Producto = sql^armado_producto      #borarr los paréntesis 
-
-'''QUEDA MAPEAR CON CLAE2'''
-# =============================================================================
-
 # Armado dataframe de departamento
 # =============================================================================
 armado_departamento = """
@@ -264,7 +253,257 @@ armado_clae = """
                 FROM clae
                 """
 df_CLAE = sql^armado_clae
- # =============================================================================
+# =============================================================================
+
+# Armado dataframe de producto
+# =============================================================================
+armado_producto = """
+                 SELECT DISTINCT producto
+                 FROM operadores_organicos
+                 """
+df_Producto = sql^armado_producto      #borarr los paréntesis 
+
+# =============================================================================
+# Para asignar la clae correspondiente a cada producto, como no encontramos un patrón
+# ni una buena forma de hacerlo con las queries decidimos hacerlo a mano. 
+# En lo personal preferimos hacerlo con pandas porque simplemente era copiar y pegar
+# unas lineas de codigo lo que resultaba más rápido y menos tedioso que tener que hacerlo
+# con un excel.
+# =============================================================================
+
+df_Producto['clae2'] = None
+
+df_Producto.at[0, 'clae2'] = 21
+df_Producto.at[1, 'clae2'] = 21
+df_Producto.at[2, 'clae2'] = 21
+df_Producto.at[3, 'clae2'] = 21
+df_Producto.at[4, 'clae2'] = 21
+df_Producto.at[5, 'clae2'] = 21
+df_Producto.at[6, 'clae2'] = 21
+df_Producto.at[7, 'clae2'] = 21
+df_Producto.at[8, 'clae2'] = 21
+df_Producto.at[9, 'clae2'] = 21
+df_Producto.at[10, 'clae2'] = 10
+df_Producto.at[11, 'clae2'] = 10
+df_Producto.at[12, 'clae2'] = 1
+df_Producto.at[13, 'clae2'] = 1
+df_Producto.at[14, 'clae2'] = 11
+df_Producto.at[15, 'clae2'] = 10
+df_Producto.at[16, 'clae2'] = 1
+df_Producto.at[17, 'clae2'] = 1
+df_Producto.at[18, 'clae2'] = 1
+df_Producto.at[19, 'clae2'] = 10
+df_Producto.at[20, 'clae2'] = 1
+df_Producto.at[21, 'clae2'] = 10
+df_Producto.at[22, 'clae2'] = 1 
+df_Producto.at[23, 'clae2'] = 10
+df_Producto.at[24, 'clae2'] = 
+df_Producto.at[25, 'clae2'] = 1
+df_Producto.at[26, 'clae2'] = 1
+df_Producto.at[27, 'clae2'] = 1
+df_Producto.at[28, 'clae2'] = 1
+df_Producto.at[29, 'clae2'] = 10
+df_Producto.at[30, 'clae2'] = 10
+df_Producto.at[31, 'clae2'] = 10
+df_Producto.at[32, 'clae2'] = 10
+df_Producto.at[33, 'clae2'] = 1
+df_Producto.at[34, 'clae2'] = 1
+df_Producto.at[35, 'clae2'] = 1
+df_Producto.at[36, 'clae2'] = 1
+df_Producto.at[37, 'clae2'] = 1
+df_Producto.at[38, 'clae2'] = 10
+df_Producto.at[39, 'clae2'] = 1
+df_Producto.at[40, 'clae2'] = 1
+df_Producto.at[41, 'clae2'] = 1
+df_Producto.at[42, 'clae2'] = 1
+df_Producto.at[43, 'clae2'] = # AGREGAR DERIVADOS TEXTILES
+df_Producto.at[44, 'clae2'] = 
+df_Producto.at[45, 'clae2'] = 
+df_Producto.at[46, 'clae2'] =
+df_Producto.at[47, 'clae2'] = 1
+df_Producto.at[48, 'clae2'] = 1
+df_Producto.at[49, 'clae2'] = 1
+df_Producto.at[50, 'clae2'] = 10 # TRUCHAS A LAS FINAS HIERBAS
+df_Producto.at[51, 'clae2'] = 10
+df_Producto.at[52, 'clae2'] = 10
+df_Producto.at[53, 'clae2'] = 10
+df_Producto.at[54, 'clae2'] = # OTROS PRODUCTOS ORGANICOS DICE
+df_Producto.at[55, 'clae2'] = 10
+df_Producto.at[56, 'clae2'] = 10
+df_Producto.at[57, 'clae2'] = 10
+df_Producto.at[58, 'clae2'] = 10
+df_Producto.at[59, 'clae2'] = 1
+df_Producto.at[60, 'clae2'] = 10
+df_Producto.at[61, 'clae2'] = 1
+df_Producto.at[62, 'clae2'] = 10
+df_Producto.at[63, 'clae2'] = 10
+df_Producto.at[64, 'clae2'] = 10
+df_Producto.at[65, 'clae2'] = 10
+df_Producto.at[66, 'clae2'] = 10
+df_Producto.at[67, 'clae2'] = 10
+df_Producto.at[68, 'clae2'] = 1
+df_Producto.at[69, 'clae2'] = 10
+df_Producto.at[70, 'clae2'] = 10
+df_Producto.at[71, 'clae2'] = 1
+df_Producto.at[72, 'clae2'] = 10
+df_Producto.at[73, 'clae2'] = 1
+df_Producto.at[74, 'clae2'] = 10
+df_Producto.at[75, 'clae2'] = 10
+df_Producto.at[76, 'clae2'] = 1
+df_Producto.at[77, 'clae2'] = 10
+df_Producto.at[78, 'clae2'] = 1
+df_Producto.at[79, 'clae2'] = 1
+df_Producto.at[80, 'clae2'] = 10
+df_Producto.at[81, 'clae2'] = 10
+df_Producto.at[82, 'clae2'] = 10
+df_Producto.at[83, 'clae2'] = 10
+df_Producto.at[84, 'clae2'] = 10
+df_Producto.at[85, 'clae2'] = 10
+df_Producto.at[86, 'clae2'] = 1
+df_Producto.at[87, 'clae2'] = 1
+df_Producto.at[88, 'clae2'] = 1
+df_Producto.at[89, 'clae2'] = 10
+df_Producto.at[90, 'clae2'] = 1
+df_Producto.at[91, 'clae2'] = 1
+df_Producto.at[92, 'clae2'] = 10
+df_Producto.at[93, 'clae2'] = 10
+df_Producto.at[94, 'clae2'] = 10
+df_Producto.at[95, 'clae2'] = 10
+df_Producto.at[96, 'clae2'] = 1
+df_Producto.at[97, 'clae2'] = 10
+df_Producto.at[98, 'clae2'] = 1
+df_Producto.at[99, 'clae2'] = 21 ''' CHECKEAR '''
+df_Producto.at[100, 'clae2'] = 1
+df_Producto.at[101, 'clae2'] = 1
+df_Producto.at[102, 'clae2'] =  
+df_Producto.at[103, 'clae2'] = 10
+df_Producto.at[104, 'clae2'] = 10
+df_Producto.at[105, 'clae2'] = 10
+df_Producto.at[106, 'clae2'] = 
+df_Producto.at[107, 'clae2'] = 
+df_Producto.at[108, 'clae2'] = 1
+df_Producto.at[109, 'clae2'] = 1
+df_Producto.at[110, 'clae2'] = 1 '''CHECKEAR'''
+df_Producto.at[111, 'clae2'] = ''' HABRIA QUE ELIMINAR '''
+df_Producto.at[112, 'clae2'] = 1
+df_Producto.at[113, 'clae2'] = 1
+df_Producto.at[114, 'clae2'] = 1
+df_Producto.at[115, 'clae2'] = 1
+df_Producto.at[116, 'clae2'] = 1
+df_Producto.at[117, 'clae2'] = 
+df_Producto.at[118, 'clae2'] = 1
+df_Producto.at[119, 'clae2'] = 1
+df_Producto.at[120, 'clae2'] = 1
+df_Producto.at[121, 'clae2'] = 1
+df_Producto.at[122, 'clae2'] = 1
+df_Producto.at[123, 'clae2'] = 1
+df_Producto.at[124, 'clae2'] = 1
+df_Producto.at[125, 'clae2'] = 1
+df_Producto.at[126, 'clae2'] = 1
+df_Producto.at[127, 'clae2'] = 1
+df_Producto.at[128, 'clae2'] = 1
+df_Producto.at[129, 'clae2'] = 1
+df_Producto.at[130, 'clae2'] = 1
+df_Producto.at[131, 'clae2'] = 1
+df_Producto.at[132, 'clae2'] = 1
+df_Producto.at[133, 'clae2'] = 1
+df_Producto.at[134, 'clae2'] = 1
+df_Producto.at[135, 'clae2'] = 1
+df_Producto.at[136, 'clae2'] = 1
+df_Producto.at[137, 'clae2'] = 1
+df_Producto.at[138, 'clae2'] = 2 ''' CHECKEAR '''
+df_Producto.at[139, 'clae2'] = 1
+df_Producto.at[140, 'clae2'] = 1
+df_Producto.at[141, 'clae2'] = 1 # ESTO NO IRIA PERO BUENO
+df_Producto.at[142, 'clae2'] = 1 # WTF
+df_Producto.at[143, 'clae2'] = 1 # MUY DECLARATIVO
+df_Producto.at[144, 'clae2'] = 1
+df_Producto.at[145, 'clae2'] = 1
+df_Producto.at[146, 'clae2'] = 1
+df_Producto.at[147, 'clae2'] = 
+df_Producto.at[148, 'clae2'] = 1
+df_Producto.at[149, 'clae2'] = 1
+df_Producto.at[150, 'clae2'] = 1
+df_Producto.at[151, 'clae2'] = 1
+df_Producto.at[152, 'clae2'] = 2 '''CHECKEAR'''
+df_Producto.at[153, 'clae2'] = 1
+df_Producto.at[154, 'clae2'] = 1
+df_Producto.at[155, 'clae2'] = 1
+df_Producto.at[156, 'clae2'] = ''' PARA MI ES 10 PERO DESPUÉS SE VE'''
+df_Producto.at[157, 'clae2'] = 1 ''' CHECKEAR '''
+df_Producto.at[158, 'clae2'] = 1
+df_Producto.at[159, 'clae2'] = 1
+df_Producto.at[160, 'clae2'] = 1
+df_Producto.at[161, 'clae2'] = 1
+df_Producto.at[162, 'clae2'] = 1
+df_Producto.at[163, 'clae2'] = 1
+df_Producto.at[164, 'clae2'] = 1
+df_Producto.at[165, 'clae2'] = 1
+df_Producto.at[166, 'clae2'] = 1
+df_Producto.at[167, 'clae2'] = 1
+df_Producto.at[168, 'clae2'] = 1
+df_Producto.at[169, 'clae2'] = 1
+df_Producto.at[170, 'clae2'] = 1
+df_Producto.at[171, 'clae2'] = 1
+df_Producto.at[172, 'clae2'] = 1
+df_Producto.at[173, 'clae2'] = 1
+df_Producto.at[174, 'clae2'] = 1
+df_Producto.at[175, 'clae2'] = 1
+df_Producto.at[176, 'clae2'] = 
+df_Producto.at[177, 'clae2'] = 1
+df_Producto.at[178, 'clae2'] = 1
+df_Producto.at[179, 'clae2'] = 1
+df_Producto.at[180, 'clae2'] = 1
+df_Producto.at[181, 'clae2'] = 
+df_Producto.at[182, 'clae2'] = 1
+df_Producto.at[183, 'clae2'] = 1
+df_Producto.at[184, 'clae2'] = 1
+df_Producto.at[185, 'clae2'] = 1
+df_Producto.at[186, 'clae2'] = 1
+df_Producto.at[187, 'clae2'] = 
+df_Producto.at[188, 'clae2'] = 1
+df_Producto.at[189, 'clae2'] = 1
+df_Producto.at[190, 'clae2'] = 1
+df_Producto.at[191, 'clae2'] = 1
+df_Producto.at[192, 'clae2'] = 1
+df_Producto.at[193, 'clae2'] = 1
+df_Producto.at[194, 'clae2'] = 1
+df_Producto.at[195, 'clae2'] = 1
+df_Producto.at[196, 'clae2'] = 
+df_Producto.at[197, 'clae2'] = 1
+df_Producto.at[198, 'clae2'] = 1
+df_Producto.at[199, 'clae2'] = 1
+df_Producto.at[200, 'clae2'] = 1
+df_Producto.at[201, 'clae2'] = 21 '''CHECKEAR'''
+df_Producto.at[202, 'clae2'] = 21
+df_Producto.at[203, 'clae2'] = 1
+df_Producto.at[204, 'clae2'] = 1
+df_Producto.at[205, 'clae2'] = 1 '''DICE REMNOLACHA CORREGIR'''
+df_Producto.at[206, 'clae2'] = 1 ''' ES LA MISMA PLANTA QUE EL bok choy'''
+df_Producto.at[207, 'clae2'] = 1
+df_Producto.at[208, 'clae2'] = 1
+df_Producto.at[209, 'clae2'] = 1
+df_Producto.at[210, 'clae2'] = 1
+df_Producto.at[211, 'clae2'] = 1
+
+
+
+
+
+
+
+df_Producto.at[590, 'clae2'] = 10
+df_Producto.at[591, 'clae2'] = 10 '''Checkear'''
+df_Producto.at[592, 'clae2'] = 1
+df_Producto.at[593, 'clae2'] = 1 '''Checkear'''
+df_Producto.at[594, 'clae2'] = 1 '''Checkear '''
+df_Producto.at[595, 'clae2'] = 11 ''' Checkear'''
+df_Producto.at[596, 'clae2'] = 
+df_Producto.at[597, 'clae2'] = 21
+df_Producto.at[598, 'clae2'] = 
+
+'''QUEDA MAPEAR CON CLAE2'''
+# =============================================================================
 
 # Relaciones entre entidades
 
