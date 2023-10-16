@@ -136,13 +136,13 @@ localidades = sql^limpieza_localidades
 limpieza_clae = """
                 SELECT DISTINCT clae2, clae2_desc
                 FROM clae
-                WHERE letra = 'A' or clae2 in (10,11,13,20,21,999)
+                WHERE letra = 'A' or clae2 in (10,11,13,20,21)
                 ORDER BY clae2 ASC
               """
 clae = sql^limpieza_clae
 
-
-
+clae[clae2] = 999
+clae[clae2_desc] = Otro
 
 
 
