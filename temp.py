@@ -63,8 +63,7 @@ df_CLAE = pd.DataFrame(columns=['clae3','clae3_desc', 'clae2', 'clae2_desc'])
 df_Relacion_Produce = pd.DataFrame(columns=['establecimiento', 'razón_social', 'producto'])
 
 
-# Ejercicio h) i)
-
+# Ejercicio f)
 # Limpieza 
 
 # Limpieza operadores orgánicos
@@ -77,26 +76,12 @@ limpieza_operadores_organicos = """
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
 
-# =============================================================================
-# Primero lo que se hizo fue empezar a limpiar/mejorar los datos 
-# Para eso en la parte de establecimientos donde aparecía NC decidimos 
-# Que diga establecimiento único (por qué)
-# y también que las listas de productos solo aparezcan separadas por comas y no
-# por otros caracteres no deseados
-# =============================================================================
-
 
 limpieza_operadores_organicos = """
                                 SELECT *, TRIM(UNNEST( string_to_array(productos, ','))) AS producto
                                 FROM operadores_organicos
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
-
-# =============================================================================
-# Después decidimos desglosar la lista de productos que aparecía para así 
-# tenerlos todos por separado. Para esto usamos las funciones TRIM y UNNEST
-# (explicar un poco que hace cada una)
-# =============================================================================
 
 
 limpieza_operadores_organicos = """
@@ -105,11 +90,6 @@ limpieza_operadores_organicos = """
                                 ORDER BY id_provincia ASC
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
-# =============================================================================
-# Finalmente a la lista de productos decidimos ignorarla
-# =============================================================================
-
-# =============================================================================
 
 
 # Limpieza localidades
@@ -123,19 +103,6 @@ limpieza_localidades = """
                         """
 localidades = sql^limpieza_localidades   
 
-# =============================================================================
-# Primero decidimos hacer un SELECT DISTINCT para no tener localidades repetidas
-# Luego nos quedamos solamente con: código que indica departamento,
-# nombre de departamento, codigo que indica provincia, nombre de provincia.
-# 
-# Sin embargo, vimos que nos aparecían todas las columnas de CABA juntas así que
-# decidimos juntarlas y renombrarlas como CABA y tomar un único índice para referirnos
-# a estas. También apareció un problema de formato puesto que al final de la lista
-# de comunas aparecía un espacio que luego dificultaba el acceso a ese valor por lo que
-# decidimos borrarlo. 
-#
-# A su vez decidimos ordenar la tabla para que sea más fácil su lectura.
-# =============================================================================
 
 limpieza_localidades = """
                        SELECT id_departamento, id_provincia, provincia,
@@ -143,31 +110,19 @@ limpieza_localidades = """
                        FROM localidades
                        """
 localidades = sql^limpieza_localidades
-# =============================================================================
-# Por último decidimos deshacernos de las tildes para facilitar las búsquedas y 
-# tener un criterio unificado
-# =============================================================================
+
 
 # Limpieza clae
 # =============================================================================
 limpieza_clae = """
-                SELECT DISTINCT clae3, clae3_desc, clae2, clae2_desc
+                SELECT DISTINCT clae2, clae2_desc
                 FROM clae
-                WHERE letra = 'A' or (letra = 'C' and clae2 in (10,11,21))
-                ORDER BY clae2 ASC, clae3 ASC
+                WHERE letra = 'A' or clae2 in (10,11,21)
+                ORDER BY clae2 ASC
               """
 clae = sql^limpieza_clae
 
-# =============================================================================
-# Primero decidimos hacer un SELECT DISTINCT para no tener las repeticiones que se
-# presentan en la tabla. Luego decidimos quedarnos con lo asociado a clae2 y clae3
-# y además quedarnos solo con las claes asociadas a actividades del sector primario
-# como también manufacturación de alimentos y derivados de productos orgánicos como
-# pueden ser cremas (vamos a considerarlas como productos farmacéuticos)
-# =============================================================================
 
-
-# =============================================================================
 # Limpieza establecimientos productivos
 # =============================================================================
 limpieza_establecimiento_productivo = """
@@ -177,10 +132,6 @@ limpieza_establecimiento_productivo = """
                                     """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo
 
-# =============================================================================
-# Decidimos quedarnos solamente con el id, la clasificación de clae2 y su proporción
-# de mujeres, además de ordenar con por id ascendente
-# =============================================================================
 
 limpieza_establecimiento_productivo_clae = """
                                             SELECT ep.id, ep.clae2, ep.proporcion_mujeres
@@ -192,14 +143,6 @@ limpieza_establecimiento_productivo_clae = """
                                             ORDER BY clae2 ASC
                                            """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo_clae
-# =============================================================================
-# Vamos a quedarnos con los establecimientos productivos cuya clae sea la de productores
-# orgánicos. Para eso hacemos una subquery
-# =============================================================================
-
-# =============================================================================
-
-
 # =============================================================================
 
 # Armado
