@@ -203,7 +203,7 @@ df_Operadores_organicos = sql^armado_operadores_organicos
 # Armado dataframe de departamento
 # =============================================================================
 armado_departamento = """
-                      SELECT id_departamento AS id, departamento, id_provincia
+                      SELECT DISTINCT id_departamento AS id, departamento, id_provincia
                       FROM localidades                         
                       """
 df_Departamento = sql^armado_departamento
