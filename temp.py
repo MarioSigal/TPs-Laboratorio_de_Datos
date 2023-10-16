@@ -53,7 +53,7 @@ clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
 # Ejercicio e)
 
-df_Operadores_organicos = pd.DataFrame(columns=['establecimiento', 'razón_social', 'departamento', 'id_provincia', 'id_departamento'])
+df_Operadores_organicos = pd.DataFrame(columns=['id','establecimiento', 'razón_social', 'departamento', 'id_provincia', 'id_departamento'])
 df_Producto = pd.DataFrame(columns=['producto', 'clae3']) 
 df_Departamento = pd.DataFrame(columns=['id', 'departamento', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'provincia'])
