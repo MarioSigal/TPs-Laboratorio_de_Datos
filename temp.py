@@ -117,7 +117,7 @@ localidades = sql^limpieza_localidades
 limpieza_clae = """
                 SELECT DISTINCT clae2, clae2_desc
                 FROM clae
-                WHERE letra = 'A' or clae2 in (10,11,21)
+                WHERE letra = 'A' or clae2 in (10,11,13,21)
                 ORDER BY clae2 ASC
               """
 clae = sql^limpieza_clae
