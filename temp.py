@@ -860,6 +860,8 @@ df_Producto.at[598, 'clae2'] = 10
 
 # Relaciones entre entidades
 
+
+# =============================================================================
 # Agregamos id_departamento
 agregar_id_departamento1 = """
                            SELECT oo.*, dep.id_departamento
@@ -905,19 +907,19 @@ union = """
         ORDER BY id ASC
         """
 df_Operadores_organicos = sql^union
+# =============================================================================
 
 
-
-
+# =============================================================================
 # Relación entre producto y operadores orgánicos 
 
 relacion_n_m = """ 
-                SELECT establecimiento, razón_social, producto
+                SELECT id, producto
                 FROM operadores_organicos
                """
 
 df_Relacion_Produce = sql^relacion_n_m
-
+# =============================================================================
 
 # Ejercicio h) ii)
 # =============================================================================
