@@ -5,12 +5,11 @@ Created on Wed Oct 18 12:18:26 2023
 
 @author: clinux01
 """
-
-#visualizacion
-
-#Visualización
-
-# Ejercicio i)
+import pandas as pd
+from inline_sql import sql, sql_val
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 #Ejercicio 1
 #Cantidad de establecimientos productivos por provincia
@@ -64,7 +63,7 @@ cant_prod_por_prov = sql^Consultai2_2
 
 Consultai2_3 = """
                SELECT *
-               FROM producto_idop_prov
+               FROM cant_prod_por_prov
                WHERE productos_por_operador <= 10
                """
 cant_prod_por_prov_hasta_10 = sql^Consultai2_3
@@ -83,115 +82,53 @@ plt.close()
 #generar una tabla de equivalencia, de manera manual, entre la letra de CLAE
 #y el rubro de del operador orgánico.
 
-#como separamos a los operadores organicos por clae 2, decidimos quedarnos con los establecimientos productivos que tengan la misma clae2, pues clae2 es mas restrictiva que clae Letra entonces seguimos cumpliendo el objetivo del ejercicio
-#si un operador organico produce dos o mas productos con distnta clae2 decidimos tomarlos como operadores organicos distintos
-
-#entonces como dijo jack el destripador, vamos por partes (meme de una de las clases)
-
-#juntar clae con producto
-#ya esta en df producto
-
-#juntar clae con operador organico
-#df_producto -inner join- df_realcion_produce -INNER JOIN- df_operadororganico
-
-Consultai3_1 = """
-               SELECT DISTINCT prod.clae2, rel.id_op_or
-               FROM df_Producto AS prod
-               INNER JOIN df_Relacion_Produce AS rel
-               ON prod.producto = rel.producto
-               """
-clae2_idopor = sql^Consultai3_1 
-
-Consultai3_2 = """
-               SELECT DISTINCT clae2, id_op_or, id_departamento
-               FROM clae2_idopor
-               INNER JOIN df_Operadores_organicos
-               ON id_op_or = id
-               """
-clae2_idopor_idprov = sql^Consultai3_2
-
-# bueno me acabo de dar cuenta que lo anterior no era recesario xd
-
-# busco.... ya no se lo que busco.... estoy cansado jefe.....
-# busco los establecimientos productivos que tienen clae 2 entre 1,2,3,10,20,21, ya los tengo, son los del df_Establecimiento_productivo
-
-# entonces es mucho mas facil de lo que pensaba
-
-
-#uno departamento_provincia
-Consultai3_4 = """ 
-               SELECT dep.id AS id_departamento, dep.departamento, prov.id AS id_provincia, prov.provincia
-               FROM df_Departamento AS dep
-               INNER JOIN df_Provincia AS prov
-               ON dep.id_provincia = prov.id
-               """
-Departamento_Provincia = sql^Consultai3_4
-
-
-#me quedo con los operadores organicos por provincia, teniendo en cuenta lo que pueden tener claes distintas(saco clae 999)
-Consultai3_3 = """
-               SELECT DISTINCT c2oo.clae2, c2oo.id_op_or, dp.provincia
-               FROM clae2_idopor_idprov AS c2oo
-               INNER JOIN Departamento_Provincia AS dp
-               ON c2oo.id_departamento = dp.id_departamento
-               WHERE clae2 != 999
-               """
-op_or_por_provincia = sql^Consultai3_3
-
-
-
-#proporcion de mujeres empleadas en establecimientos productivos en cada provincia
-Consultai3_5 = """
-               SELECT DISTINCT ep.id, ep.clae2, ep.proporcion_mujeres, dp.provincia
-               FROM df_Establecimiento_productivo AS ep
-               INNER JOIN Departamento_Provincia AS dp
-               ON ep.id_departamento = dp.id_departamento
-               """
-est_prod_por_provincia = sql^Consultai3_5
-
-#promedio de proporcion de mujeres por
-
-
+# los establecimientos productivos que tienen clae 2 e {1,2,3,10,20,21} ya los tengo, son los del df_Establecimiento_productivo
 
 # vamos de nuevo
 
-
-# cantidad de estabelcimientos productivos por provincia
-
 #Cantidad de establecimientos productivos por provincia
-Consultai1_1 = """ 
+Consultai3_1 = """ 
                SELECT dep.id AS id_departamento, dep.departamento, prov.id AS id_provincia, prov.provincia
                FROM df_Departamento AS dep
                INNER JOIN df_Provincia AS prov
                ON dep.id_provincia = prov.id
                """
-Departamento_Provincia = sql^Consultai1_1
+Departamento_Provincia = sql^Consultai3_1
 
-Consultai1_2 = """
-               SELECT dp.provincia, count(dp.provincia)AS cantidad
+Consultai3_2 = """
+               SELECT dp.provincia, count(dp.provincia) AS cantidad
                FROM df_Operadores_organicos AS oo
                INNER JOIN Departamento_Provincia AS dp
                ON oo.id_departamento = dp.id_departamento
                GROUP BY provincia
                """
-op_or_por_provincia = sql^Consultai1_2
+cantidad_op_or_por_provincia = sql^Consultai3_2
+
+# proporcion de mujeres por provincia
+
+Consultai3_3 = """
+               SELECT DISTINCT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
+               FROM df_Establecimiento_productivo AS ep
+               INNER JOIN Departamento_Provincia AS dp
+               ON ep.id_departamento = dp.id_departamento
+               GROUP BY dp.provincia
+               """
+proporcion_mujeres_por_provincia = sql^Consultai3_3
+
+Consultai3_4 = """
+               SELECT p.proporcion_mujeres, c.cantidad, c.provincia
+               FROM cantidad_op_or_por_provincia AS c
+               LEFT OUTER JOIN proporcion_mujeres_por_provincia AS p
+               ON c.provincia = p.provincia
+               """
+proporcion_cantidad_provincia = sql^Consultai3_4
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-sns.scatterplot(data=tips, x="proporcion de mujeres", y="cantidad de operadores organicos", hue="provincias")
-
+sns.scatterplot(data=proporcion_cantidad_provincia, x="cantidad", y="proporcion_mujeres", hue="provincia")
+x_coord = 1.1  # Coordenada X
+y_coord = 0.5  # Coordenada Y
+plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
+plt.show()
 #Ejercicio 4
 #¿Cuál es la distribución de los datos correspondientes a la proporción de
 #mujeres empleadas en establecimientos productivos en Argentina? 
@@ -213,12 +150,6 @@ Consultai4_2 = """
 proporcion_mujeres_provincia = sql^Consultai4_2
 
 sns.violinplot(data = proporcion_mujeres_provincia, x = 'provincia' , y = 'proporcion_mujeres').set(xlabel = 'provincias' , ylabel='proporcion de mujeres')
-
+plt.xticks(rotation = 90)
 plt.show()
 plt.close()
-
-
-
-
-
-
