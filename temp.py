@@ -25,6 +25,7 @@ establecimientos_productivos = pd.read_csv('./TablasOriginales/distribucion_esta
 # =============================================================================
 
 localidades = pd.read_csv('./TablasOriginales/localidad_bahra.csv')
+
 # =============================================================================
 #
 # Localidades de la Base de Asentamientos Humanos de la República Argentina
@@ -916,107 +917,158 @@ relacion_n_m = """
 df_Relacion_Produce = sql^relacion_n_m
 # =============================================================================
 
-# Ejercicio h) ii)
-# =============================================================================
-# ¿Cuál es el CLAE2 más frecuente en establecimientos productivos?
-# Mencionar el Código y la Descripción de dicho CLAE2.
-# =============================================================================
+# Ejercicio h)
+# Ejercicio i)
 
-#Ejercicio i)
+consultah1_1 = """
+                SELECT DISTINCT producto, id_provincia
+                FROM df_Relacion_Produce
+                INNER JOIN df_Operadores_organicos 
+                ON id = id_op_or
+                """
+producto_id_provincia = sql^consultah1_1
 
-#Consulta 1 PRODUCTO operador organico
-Consultah1_1 = """
-SELECT producto, id_departamento
-FROM df_Relacion_Produce
-INNER JOIN df_Operadores_organicos 
-ON id = id_op_or
-"""
-Producto_Departamento = sql^Consultah1_1
+consultah1_2 = """
+                SELECT pip.producto, dp.provincia
+                FROM producto_id_provincia AS pip
+                INNER JOIN df_Provincia AS dp
+                ON pip.id_provincia = dp.id
+                """
+producto_provincia = sql^consultah1_2       
+        
+consultah1_3 = """
+                SELECT producto, count(producto) as cantidad
+                FROM producto_provincia
+                GROUP BY producto
+                ORDER BY cantidad desc
+               """
+cantidad_productos = sql^consultah1_3
 
-Consultah1_2 = """ 
-SELECT dep.id AS id_departamento, dep.departamento, prov.id AS id_provincia, prov.provincia
-FROM df_Departamento AS dep
-INNER JOIN df_Provincia AS prov
-ON dep.id_provincia = prov.id
-"""
-Departamento_Provincia = sql^Consultah1_2
-
-
-Consultah1_3 = """
-SELECT pop.producto, dp.provincia
-FROM Producto_Departamento AS pop
-INNER JOIN Departamento_Provincia AS dp
-ON pop.id_departamento = dp.id_departamento
-ORDER BY producto ASC
-"""
-Producto_Provincia = sql^Consultah1_3
-
-
-#count(producto) As count, count(producto) DESC
-
-
-Ejercicio h2
-Consultah2_1 = """
-SELECT DISTINCT  clae2 , clae2_descripción
-FROM
-df_Establecimientos_productivos AS est
-INNER JOIN
-df_clae AS clae
-ON est.clae2 = clae.clae2
-ORDER BY COUNT(clae2) DESC
-"""
-Clae2_EstablecimientoProductivo = sql^Consultah2_1
+consultah1_4 = """
+                SELECT pd.producto, pd.provincia 
+                FROM producto_provincia AS pd
+                INNER JOIN cantidad_productos AS cp
+                ON pd.producto = cp.producto
+                ORDER BY cp.cantidad DESC, pd.producto ASC
+                """
+producto_provincia_ordenado = sql^consultah1_4
+print(producto_provincia_ordenado)
 
 
-Ejercicio h3
-Con las variables del ejercicio h1
+# Ejercicio ii)
 
-CONSULTA 1
-SELECT pop.nombre_producto, dp.provincia, count(nombre_producto) As count
-FROM
-Producto_operador_organico AS pop
-INNER JOIN
-Departamento_provincia AS dp
-ON pop.id_departamento =  dp.id_departamento
-GROUP BY count(nombre_producto) DESC, nombre_producto ASC
+consultah2_1 =  """
+                SELECT clae2, count(clae2) as cantidad
+                FROM df_Establecimiento_productivo
+                GROUP BY clae2
+                """
+clae2_cantidad = sql^consultah2_1
 
-SELECT  nombre_producto
+consultah2_2 = """
+                SELECT dc.clae2, dc.clae2_desc
+                FROM df_CLAE AS dc
+                WHERE dc.clae2 = (
+                    SELECT cd1.clae2
+                    FROM clae2_cantidad AS cd1
+                    WHERE cd1.cantidad = (
+                        SELECT max(cd2.cantidad)
+                        FROM clae2_cantidad AS cd2
+                        )
+                    )
+                """
+clae2_establecimiento_productivo = sql^consultah2_2
+print(clae2_establecimiento_productivo)
+
+
+# Ejercicio iii)
+
+consultah3_1 =  """
+                SELECT producto, count(producto) as cantidad
+                FROM df_Relacion_Produce
+                GROUP BY producto
+                """
+producto_cantidad = sql^consultah3_1
+
+consultah3_2 = """
+                SELECT pc1.producto
+                FROM producto_cantidad AS pc1
+                WHERE pc1.cantidad = (
+                    SELECT max(pc2.cantidad)
+                    FROM producto_cantidad AS pc2
+                    )
+                """
+producto_mas_producido = sql^consultah3_2
+print(producto_mas_producido)
+
+# ¿Qué Provincia-Departamento los producen?
+
+consultah3_3 = """
+                SELECT drp.id_op_or
+                FROM df_Relacion_Produce AS drp
+                WHERE drp.producto = (
+                    SELECT pmp.producto
+                    FROM producto_mas_producido AS pmp
+                    )
+                """
+operador_organico_producto = sql^consultah3_3
+
+consultah3_4 = """
+                SELECT id_provincia, id_departamento
+                FROM df_Operadores_organicos
+                INNER JOIN operador_organico_producto
+                ON id_op_or = id
+                """
+ids_provincia_departamento = sql^consultah3_4
+
+consultah3_5 = """
+                SELECT provincia, id_departamento
+                FROM df_Provincia
+                INNER JOIN ids_provincia_departamento
+                ON id = id_provincia
+                """
+id_provincia_departamento = sql^consultah3_5
+
+consultah3_6 = """
+                SELECT provincia, departamento
+                FROM id_provincia_departamento
+                INNER JOIN df_Departamento
+                ON id = id_departamento
+                """
+provincia_departamento = sql^consultah3_6
+print(provincia_departamento)
+
+# Ejercicio iv) SIN NULLs QUEDARIA BIEN SUPoNGO
 
 
 
 
-Ejercicio 4
 
-
-
+#copiar
 Consultah4_1 = """
-SELECT DISTINCT Id
-FROM
-df_Departamento
-EXCEPT
-SELECT DISTINCT id_departamento AS id
-FROM
-df_Operadores_organicos
-"""
-Id_departamentos_sin_op_or = sql^Consultah4_1
+                SELECT DISTINCT Id
+                FROM df_Departamento
+            EXCEPT
+                SELECT DISTINCT id_departamento AS id
+                FROM df_Operadores_organicos
+                """
+id_departamentos_sin_op_or = sql^Consultah4_1
 
-Cuántos son?: len(id_departamentos_sin_op_or)
+#Cuántos son?: 
+print(len(id_departamentos_sin_op_or))
 
-Cuales son:
+#Cuales son:
 Consultah4_2 = """
-SELECT dp.departamento, dp.provincia
-FROM
-Id_departamentos_sin_op_or AS dsoo.
-INNER JOIN
-Departamento_Provincia AS dp
-ON dsoo.id = dp.id_departamento
-"""
+                SELECT dp.departamento, dp.provincia
+                FROM id_departamentos_sin_op_or AS dsoo
+                INNER JOIN Departamento_Provincia AS dp
+                ON dsoo.id = dp.id_departamento
+                """
 Departamentos_sin_op_or = sql^Consultah4_2
 
+print(Departamentos_sin_op_or)
 
 
-
-
+# Ejercicio v)
 
 
 
