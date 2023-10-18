@@ -124,6 +124,52 @@ limpieza_localidades = """
                        FROM localidades
                        """
 localidades = sql^limpieza_localidades
+
+# Buscamos los departamentos con el mismo id pero de distintas provincias para cambiarlos a mano
+consultaAux = """SELECT DISTINCT id_departamento, departamento, id_provincia, provincia
+FROM localidades"""
+
+repetidos = sql^consultaAux
+consultaAux = """
+            SELECT DISTINCT id_departamento, count(id_departamento) AS cant, departamento
+            FROM repetidos
+            GROUP BY id_departamento, departamento
+            HAVING cant > 1
+            """
+repetidos = sql^consultaAux
+
+# cambiamos los ids a mano
+
+dataframe_chiquito= """
+                    SELECT * 
+                    FROM localidades
+                    WHERE id_departamento in (10070,86084,26007)
+                    """
+localidades1 = sql^dataframe_chiquito
+
+localidades_sin_id_repetido = """
+                              SELECT * 
+                              FROM localidades
+                              EXCEPT
+                              SELECT *
+                              FROM localidades1
+                              """
+localidades = sql^localidades_sin_id_repetido
+
+# Cambiamos valores a mano
+
+localidades1.at[19,'id_departamento'] = '95001'
+localidades1.at[20,'id_departamento'] = '95002'
+localidades1.at[21 ,'id_departamento'] = '95003'
+
+localidades_sin_repetidos = """
+                            SELECT * 
+                            FROM localidades
+                        UNION
+                            SELECT *
+                            FROM localidades1
+                            """
+localidades = sql^localidades_sin_repetidos
 # =============================================================================
 
 
@@ -1027,7 +1073,7 @@ consultah3_4 = """
 ids_provincia_departamento = sql^consultah3_4
 
 consultah3_5 = """
-                SELECT provincia, id_departamento
+                SELECT DISTINCT provincia, id_departamento
                 FROM df_Provincia
                 INNER JOIN ids_provincia_departamento
                 ON id = id_provincia
@@ -1043,35 +1089,37 @@ consultah3_6 = """
 provincia_departamento = sql^consultah3_6
 print(provincia_departamento)
 
-# Ejercicio iv) SIN NULLs QUEDARIA BIEN SUPoNGO
+# Ejercicio iv)  
+#¿Existen departamentos que no presentan Operadores Orgánicos
+#Certificados? ¿En caso de que sí, cuántos y cuáles son?
 
-
-
-
-
-#copiar
-Consultah4_1 = """
-                SELECT DISTINCT Id
+consultah4_1 = """
+                SELECT DISTINCT id
                 FROM df_Departamento
             EXCEPT
                 SELECT DISTINCT id_departamento AS id
                 FROM df_Operadores_organicos
                 """
-id_departamentos_sin_op_or = sql^Consultah4_1
+id_departamentos_sin_op_or = sql^consultah4_1
 
 #Cuántos son?: 
-print(len(id_departamentos_sin_op_or))
+consultah4_2 = """
+                SELECT count(id) AS deptos_sin_op_or
+                FROM id_departamentos_sin_op_or
+                """
+cantidad_de_deptos_sin_op_or = sql^consultah4_2
+print(cantidad_de_deptos_sin_op_or)
 
 #Cuales son:
-Consultah4_2 = """
-                SELECT dp.departamento, dp.provincia
-                FROM id_departamentos_sin_op_or AS dsoo
-                INNER JOIN Departamento_Provincia AS dp
-                ON dsoo.id = dp.id_departamento
+consultah4_2 = """
+                SELECT dd.departamento
+                FROM id_departamentos_sin_op_or AS idsoo
+                INNER JOIN df_Departamento AS dd
+                ON idsoo.id = dd.id
                 """
-Departamentos_sin_op_or = sql^Consultah4_2
+departamentos_sin_op_or = sql^consultah4_2
 
-print(Departamentos_sin_op_or)
+print(departamentos_sin_op_or)
 
 
 # Ejercicio v)
