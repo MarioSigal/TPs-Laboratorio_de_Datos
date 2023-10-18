@@ -187,16 +187,6 @@ df_Operadores_organicos = sql^armado_operadores_organicos
 
 # =============================================================================
 
-
-
-
-
-
-
-
-
-
-
 # Armado dataframe de departamento
 # =============================================================================
 armado_departamento = """
@@ -860,8 +850,8 @@ df_Producto.at[598, 'clae2'] = 1
 # =============================================================================
 # Agregamos id_departamento
 agregar_id_departamento1 = """
-                           SELECT oo.*, dep.id_departamento
-                           FROM operadores_organicos AS oo
+                           SELECT DISTINCT oo.*, dep.id_departamento
+                           FROM df_Operadores_organicos AS oo
                            LEFT OUTER JOIN localidades AS dep
                            ON oo.departamento = dep.departamento AND oo.id_provincia = dep.id_provincia
                            """
@@ -872,20 +862,27 @@ df_Operadores_organicos= sql^agregar_id_departamento1
 
 
 is_null = """
-          SELECT id, establecimiento, razón_social, departamento, id_provincia
+          SELECT DISTINCT id, establecimiento, razón_social, departamento, id_provincia
           FROM df_Operadores_organicos
           WHERE id_departamento IS NULL
           """
 Operadores_organicos_null = sql^is_null
 
 
-is_null = """
-           SELECT oo.*, asen.id_departamento AS id_departamento
+cambiar_null = """
+           SELECT DISTINCT oo.*, asen.id_departamento AS id_departamento
            FROM Operadores_organicos_null AS oo
            LEFT OUTER JOIN localidades AS asen
            ON oo.departamento = asen.asentamiento AND oo.id_provincia = asen.id_provincia
            """
-Operadores_organicos_null = sql^is_null
+Operadores_organicos_null = sql^cambiar_null
+
+nulls_a_descartar = """
+                        SELECT DISTINCT *
+                        FROM Operadores_organicos_null
+                        WHERE id_departamento IS NULL
+                    """
+Nulls_a_descartar = sql^nulls_a_descartar
 
 is_not_null = """
               SELECT id, establecimiento, razón_social, departamento, id_provincia, id_departamento,
@@ -893,6 +890,15 @@ is_not_null = """
               WHERE id_departamento IS NOT NULL
               """
 Operadores_organicos_not_null = sql^is_not_null
+
+remover_nulls = """
+                SELECT * 
+                FROM Operadores_organicos_null
+                EXCEPT
+                SELECT *
+                FROM Nulls_a_descartar
+                """
+Operadores_organicos_null = sql^remover_nulls
 
 union = """
         SELECT id, establecimiento, razón_social, id_provincia, id_departamento,
