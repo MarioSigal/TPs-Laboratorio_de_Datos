@@ -15,6 +15,7 @@ operadores_organicos= pd.read_csv('./TablasOriginales/padron-de-operadores-organ
 
 
 establecimientos_productivos = pd.read_csv('./TablasOriginales/distribucion_establecimientos_productivos_sexo.csv')
+
 # =============================================================================
 #
 # Distribución geográfica de los establecimientos productivos.
@@ -54,11 +55,11 @@ clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
 # Ejercicio e)
 
-df_Operadores_organicos = pd.DataFrame(columns=['id','establecimiento', 'razón_social', 'departamento', 'id_provincia', 'id_departamento'])
+df_Operadores_organicos = pd.DataFrame(columns=['id','establecimiento', 'razón_social', 'id_provincia', 'id_departamento'])
 df_Producto = pd.DataFrame(columns=['producto', 'clae2']) 
 df_Departamento = pd.DataFrame(columns=['id', 'departamento', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'provincia'])
-df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'clae2', 'proporción_mujeres'])
+df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'clae2', 'proporción_mujeres', 'id_departamento'])
 df_CLAE = pd.DataFrame(columns=[ 'clae2', 'clae2_desc'])
 # relación entre operadores orgánicos y producto
 df_Relacion_Produce = pd.DataFrame(columns=['establecimiento', 'razón_social', 'producto'])
@@ -131,19 +132,21 @@ FROM localidades"""
 
 repetidos = sql^consultaAux
 consultaAux = """
-            SELECT DISTINCT id_departamento, count(id_departamento) AS cant, departamento
+            SELECT DISTINCT id_departamento, count(id_departamento) AS cant
             FROM repetidos
-            GROUP BY id_departamento, departamento
+            GROUP BY id_departamento
             HAVING cant > 1
             """
 repetidos = sql^consultaAux
+
 
 # cambiamos los ids a mano
 
 dataframe_chiquito= """
                     SELECT * 
                     FROM localidades
-                    WHERE id_departamento in (10070,86084,26007)
+                    WHERE id_departamento in (10070,86084,26007,74056)
+                    ORDER BY departamento ASC, asentamiento ASC
                     """
 localidades1 = sql^dataframe_chiquito
 
@@ -158,9 +161,11 @@ localidades = sql^localidades_sin_id_repetido
 
 # Cambiamos valores a mano
 
-localidades1.at[19,'id_departamento'] = '95001'
-localidades1.at[20,'id_departamento'] = '95002'
-localidades1.at[21 ,'id_departamento'] = '95003'
+localidades1.at[0,'id_departamento'] = '95001'
+localidades1.at[5,'id_departamento'] = '95002'
+localidades1.at[22 ,'id_departamento'] = '95003'
+localidades1.at[23 ,'id_departamento'] = '95003'
+localidades1.at[34 ,'id_departamento'] = '95004'
 
 localidades_sin_repetidos = """
                             SELECT * 
@@ -192,24 +197,68 @@ clae = sql^limpieza_clae
 
 # Limpieza establecimientos productivos
 # =============================================================================
+# =============================================================================
+# limpieza_establecimiento_productivo = """
+#                                         SELECT ID AS id, clae2, proporcion_mujeres, in_departamentos AS id_departamento
+#                                         FROM establecimientos_productivos
+#                                         ORDER BY id ASC
+#                                     """
+# establecimiento_productivo = sql^limpieza_establecimiento_productivo
+# 
+# =============================================================================
+
 limpieza_establecimiento_productivo = """
-                                        SELECT ID AS id, clae2, proporcion_mujeres, in_departamentos AS id_departamento
-                                        FROM establecimientos_productivos
-                                        ORDER BY id ASC
-                                    """
-establecimiento_productivo = sql^limpieza_establecimiento_productivo
-
-
-limpieza_establecimiento_productivo_clae = """
-                                            SELECT ep.id, ep.clae2, ep.proporcion_mujeres, ep.id_departamento
-                                            FROM establecimiento_productivo as ep
+                                            SELECT *
+                                            FROM establecimientos_productivos as ep
                                             WHERE ep.clae2 IN (
                                                 SELECT clae2
                                                 FROM clae
                                                 )
-                                            ORDER BY clae2 ASC
+                                            ORDER BY ID ASC, clae2 ASC
                                            """
-establecimiento_productivo = sql^limpieza_establecimiento_productivo_clae
+establecimiento_productivo = sql^limpieza_establecimiento_productivo
+
+limpieza_establecimiento_productivo = """
+               SELECT *,
+                    CASE 
+                       WHEN provincia != 'CABA' 
+                           THEN in_departamentos
+                           ELSE '2001'
+                    END AS id_departamento
+                FROM establecimiento_productivo
+                """
+establecimiento_productivo = sql^limpieza_establecimiento_productivo    
+
+limpieza_establecimiento_productivo = """
+               SELECT *,
+                    CASE 
+                       WHEN id_departamento < 10000 
+                           THEN CONCAT('0', id_departamento)
+                           ELSE id_departamento
+                    END AS id_departamento_final
+                FROM establecimiento_productivo
+                """
+establecimiento_productivo = sql^limpieza_establecimiento_productivo 
+
+limpieza_establecimiento_productivo = """
+               SELECT *,
+                    CASE
+                       WHEN id_departamento_final = 94008 
+                       THEN 94007
+                       WHEN id_departamento_final = 94015 
+                       THEN 94014
+                       ELSE id_departamento_final
+                    END AS id_departamento_final2
+                FROM establecimiento_productivo
+                """
+establecimiento_productivo = sql^limpieza_establecimiento_productivo  
+
+limpieza_establecimiento_productivo =  """
+                                        SELECT ID AS id, id_departamento_final2 AS id_departamento,
+                                            clae2, proporcion_mujeres
+                                        FROM establecimiento_productivo
+                                        """
+establecimiento_productivo = sql^limpieza_establecimiento_productivo                                         
 # =============================================================================
 
 
@@ -1090,8 +1139,6 @@ provincia_departamento = sql^consultah3_6
 print(provincia_departamento)
 
 # Ejercicio iv)  
-#¿Existen departamentos que no presentan Operadores Orgánicos
-#Certificados? ¿En caso de que sí, cuántos y cuáles son?
 
 consultah4_1 = """
                 SELECT DISTINCT id
@@ -1121,13 +1168,57 @@ departamentos_sin_op_or = sql^consultah4_2
 
 print(departamentos_sin_op_or)
 
-
 # Ejercicio v)
 
+#¿Cuál es la tasa promedio de participación de mujeres en cada
+#provincia?¿Cuál es su desvío? En cada caso, mencionar si es mayor o
+#menor al promedio de todo el país
 
 
+consultah5_1 = """
+                SELECT ep.id, ep.proporcion_mujeres, dd.id_provincia
+                FROM df_Establecimiento_productivo AS ep
+                INNER JOIN df_Departamento AS dd
+                ON ep.id_departamento = dd.id
+                """
+proporcion_mujeres_departamento = sql^consultah5_1
 
+consultah5_2 = """
+                SELECT ep.id, ep.proporcion_mujeres, pp.provincia
+                FROM proporcion_mujeres_departamento AS ep
+                INNER JOIN df_Provincia AS pp
+                ON ep.id_provincia = pp.id
+                """
+proporcion_mujeres_provincia = sql^consultah5_2
 
+consultah5_3 = """
+                SELECT provincia, AVG(proporcion_mujeres) AS promedio, STDDEV(proporcion_mujeres) AS desvio
+                FROM proporcion_mujeres_provincia
+                GROUP BY provincia
+                """
+promedio_desvio = sql^consultah5_3
+
+consultah5_4 = """
+                SELECT AVG(proporcion_mujeres) AS promedio_pais
+                FROM proporcion_mujeres_provincia
+                """
+promedio_pais = sql^consultah5_4
+
+promedioPais = float(promedio_pais['promedio_pais'])
+
+consultah5_5 = """
+                SELECT *, 
+                    CASE
+                        WHEN promedio > $promedioPais
+                        THEN 'mayor'
+                        ELSE 'menor'
+                    END AS mayor_a_promedio_pais
+                FROM promedio_desvio
+                """
+tabla_final = sql^consultah5_5
+
+#Mostrar por cada provincia-departamento cuántos establecimientos
+#productivos y cuántos empredimientos orgánicos posee
 
 
 
