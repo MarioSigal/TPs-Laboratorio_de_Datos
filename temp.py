@@ -1246,7 +1246,12 @@ cantidades_depto = sql^consultah6_3
 
 consultah6_4 = """
                 SELECT cd.departamento, prov.provincia, 
-                    cd.cant_establecimientos_prod, cd.cant_operadores_org
+                    CASE WHEN cant_establecimientos_prod IS NULL THEN 0
+                        ELSE cant_establecimientos_prod
+                    END AS cant_establecimientos_prod,
+                    CASE WHEN cant_operadores_org IS NULL THEN 0
+                        ELSE cant_operadores_org
+                    END AS cant_operadores_org
                 FROM cantidades_depto AS cd
                 INNER JOIN df_Provincia AS prov
                 ON cd.id_provincia = prov.id
@@ -1254,12 +1259,14 @@ consultah6_4 = """
 cantidades_depto_prov = sql^consultah6_4
 
 
-
+# Ejercicio I)
 #Visualización
+
 
 #esta consulta la usaremos en la mayoria de las visualizaciones
 ConsultaDepto_Prov = """ 
-               SELECT dep.id AS id_departamento, dep.departamento, prov.id AS id_provincia, prov.provincia
+               SELECT dep.id AS id_departamento, dep.departamento, 
+                   prov.id AS id_provincia, prov.provincia
                FROM df_Departamento AS dep
                INNER JOIN df_Provincia AS prov
                ON dep.id_provincia = prov.id
@@ -1267,7 +1274,7 @@ ConsultaDepto_Prov = """
 Departamento_Provincia = sql^ConsultaDepto_Prov
 
 
-#Ejercicio 1
+# Ejercicio i)
 #Cantidad de establecimientos productivos por provincia
 
 Consultai1_1 = """
@@ -1284,7 +1291,7 @@ plt.show()
 plt.close()
 
 
-#Ejercicio 2
+#Ejercicio ii)
 #Boxplot, por cada provincia, 
 #donde se pueda observar la cantidad de productos por operador
 
@@ -1323,7 +1330,7 @@ plt.show()
 plt.close()
 
 
-#Ejercicio 3
+#Ejercicio iii)
 
 #Relación entre cantidad de establecimientos de operadores orgánicos 
 #certificados de cada provincia y la proporción de mujeres empleadas en
@@ -1368,7 +1375,8 @@ y_coord = 0.5  # Coordenada Y
 plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
 plt.xlim(0, 1)
 plt.show()
-#Ejercicio 4
+
+#Ejercicio iv)
 #¿Cuál es la distribución de los datos correspondientes a la proporción de
 #mujeres empleadas en establecimientos productivos en Argentina? 
 #Realicen un violinplot por cada provincia. Mostrarlo en un solo gráfico.
