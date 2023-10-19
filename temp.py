@@ -76,8 +76,9 @@ for i in range(len(operadores_organicos)):
 
 
 limpieza_operadores_organicos = """
-                                SELECT id, REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento, "razón social" AS razón_social,
-                                    departamento, REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(productos,':',','), ' Y ',', '),'+',','),'-',','),'?',',') AS productos,
+                                SELECT id, REGEXP_REPLACE(establecimiento, '\\bNC\\b', 'ESTABLECIMIENTO ÚNICO') AS establecimiento, 
+                                    "razón social" AS razón_social, departamento, 
+                                    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(productos,':',','), ' Y ',', '),'+',','),'-',','),'?',',') AS productos,
                                     provincia_id AS id_provincia
                                 FROM operadores_organicos;
                                 """
@@ -85,14 +86,15 @@ operadores_organicos = sql^limpieza_operadores_organicos
 
 
 limpieza_operadores_organicos = """
-                                SELECT *, TRIM(UNNEST( string_to_array(productos, ','))) AS producto
+                                SELECT *, TRIM(UNNEST(string_to_array(productos, ','))) AS producto
                                 FROM operadores_organicos
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
 
 
 limpieza_operadores_organicos = """
-                                SELECT id, establecimiento, razón_social, departamento, id_provincia, REPLACE(REPLACE(REPLACE(producto, '(', ''), ')', ''), '.', '') AS producto
+                                SELECT id, establecimiento, razón_social, departamento, 
+                                    id_provincia, REPLACE(REPLACE(REPLACE(producto, '(', ''), ')', ''), '.', '') AS producto
                                 FROM operadores_organicos
                                 ORDER BY id_provincia ASC
                                 """
@@ -1055,7 +1057,6 @@ consultah1_4 = """
 producto_provincia_ordenado = sql^consultah1_4
 print(producto_provincia_ordenado)
 
-
 # Ejercicio ii)
 
 consultah2_1 =  """
@@ -1079,7 +1080,6 @@ consultah2_2 = """
                 """
 clae2_establecimiento_productivo = sql^consultah2_2
 print(clae2_establecimiento_productivo)
-
 
 # Ejercicio iii)
 
@@ -1154,8 +1154,8 @@ consultah4_2 = """
                 SELECT count(id) AS deptos_sin_op_or
                 FROM id_departamentos_sin_op_or
                 """
-cantidad_de_deptos_sin_op_or = sql^consultah4_2
-print(cantidad_de_deptos_sin_op_or)
+cant_deptos_sin_op_or = sql^consultah4_2
+print(cant_deptos_sin_op_or)
 
 #Cuales son:
 consultah4_2 = """
@@ -1169,11 +1169,6 @@ departamentos_sin_op_or = sql^consultah4_2
 print(departamentos_sin_op_or)
 
 # Ejercicio v)
-
-#¿Cuál es la tasa promedio de participación de mujeres en cada
-#provincia?¿Cuál es su desvío? En cada caso, mencionar si es mayor o
-#menor al promedio de todo el país
-
 
 consultah5_1 = """
                 SELECT ep.id, ep.proporcion_mujeres, dd.id_provincia
@@ -1217,12 +1212,41 @@ consultah5_5 = """
                 """
 tabla_final = sql^consultah5_5
 
-#Mostrar por cada provincia-departamento cuántos establecimientos
-#productivos y cuántos empredimientos orgánicos posee
+# Ejercicio vi)
 
+consultah6_1 = """
+                SELECT id_departamento, count(id) AS cant_establecimientos_prod
+                FROM df_Establecimiento_productivo
+                GROUP BY id_departamento
+                ORDER BY cant_establecimientos_prod DESC
+                """
+cant_establecimientos_productivos_depto = sql^consultah6_1
 
+consultah6_2 = """
+                SELECT id_departamento, count(id) AS cant_operadores_org
+                FROM df_Operadores_organicos
+                GROUP BY id_departamento
+                ORDER BY cant_operadores_org DESC
+                """
+cant_operadores_organicos_depto = sql^consultah6_2
 
+consultah6_3 = """
+                SELECT depto.id, depto.departamento, depto.id_provincia, 
+                    cep.cant_establecimientos_prod, coo.cant_operadores_org
+                FROM df_Departamento AS depto
+                LEFT OUTER JOIN cant_establecimientos_productivos_depto AS cep
+                ON cep.id_departamento = depto.id
+                
+                LEFT OUTER JOIN cant_operadores_organicos_depto AS coo
+                ON coo.id_departamento = depto.id"""
 
+cantidades_depto = sql^consultah6_3
 
-
-
+consultah6_4 = """
+                SELECT cd.departamento, prov.provincia, 
+                    cd.cant_establecimientos_prod, cd.cant_operadores_org
+                FROM cantidades_depto AS cd
+                INNER JOIN df_Provincia AS prov
+                ON cd.id_provincia = prov.id
+                """
+cantidades_depto_prov = sql^consultah6_4
