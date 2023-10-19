@@ -1262,7 +1262,6 @@ cantidades_depto_prov = sql^consultah6_4
 # Ejercicio I)
 #Visualización
 
-
 #esta consulta la usaremos en la mayoria de las visualizaciones
 ConsultaDepto_Prov = """ 
                SELECT dep.id AS id_departamento, dep.departamento, 
@@ -1275,21 +1274,31 @@ Departamento_Provincia = sql^ConsultaDepto_Prov
 
 
 # Ejercicio i)
-#Cantidad de establecimientos productivos por provincia
+
+#no se usa
+# =============================================================================
+# Consultai1_1no = """
+#                SELECT oo.id, dp.provincia
+#                FROM df_Operadores_organicos AS oo
+#                INNER JOIN Departamento_Provincia AS dp
+#                ON oo.id_departamento = dp.id_departamento
+#                """
+# op_or_por_provincia = sql^Consultai1_1no
+# =============================================================================
 
 Consultai1_1 = """
-               SELECT oo.id, dp.provincia
-               FROM df_Operadores_organicos AS oo
+               SELECT ep.id, dp.provincia
+               FROM df_Establecimiento_productivo AS ep
                INNER JOIN Departamento_Provincia AS dp
-               ON oo.id_departamento = dp.id_departamento
+               ON ep.id_departamento = dp.id_departamento
                """
-op_or_por_provincia = sql^Consultai1_1
+est_prod_provincia = sql^Consultai1_1
 
-
-op_or_por_provincia['provincia'].value_counts().plot.bar().set(title='Operadores organicos por provincia', xlabel='Provincias', ylabel='Cantidad de operadores organicos')
-plt.show()
-plt.close()
-
+# =============================================================================
+# est_prod_provincia['provincia'].value_counts().plot.bar().set(title='Establecimientos productivos por provincia', xlabel='Provincias', ylabel='Cantidad de establecimientos productivos')
+# plt.show()
+# plt.close()
+# =============================================================================
 
 #Ejercicio ii)
 #Boxplot, por cada provincia, 
@@ -1297,21 +1306,20 @@ plt.close()
 
 
 Consultai2_1 = """
-               SELECT producto, id_op_or, id_provincia
-               FROM df_Relacion_Produce
-               INNER JOIN df_Operadores_organicos 
-               ON id = id_op_or
+               SELECT rp.producto, rp.id_op_or, op.id_provincia
+               FROM df_Relacion_Produce AS rp
+               INNER JOIN df_Operadores_organicos AS op
+               ON op.id = rp.id_op_or
                """
 producto_idop_idporv= sql^Consultai2_1
 
 Consultai2_2 = """
-               SELECT id_op_or, provincia, count(*) AS productos_por_operador
-               FROM producto_idop_idporv
-               INNER JOIN df_Provincia
-               ON id_provincia = id
-               GROUP BY id_op_or, provincia;
+               SELECT ii.id_op_or, pp.provincia, count(ii.producto) AS productos_por_operador
+               FROM producto_idop_idporv AS ii
+               INNER JOIN df_Provincia AS pp
+               ON ii.id_provincia = pp.id
+               GROUP BY ii.id_op_or, pp.provincia
                """
-
 cant_prod_por_prov = sql^Consultai2_2
 
 #como hay datos operadores organicos que producen muchos mas productos del promedio, la visualizacion anterios mustra los datos de manera "desproporcionada" 
@@ -1324,10 +1332,12 @@ Consultai2_3 = """
                """
 cant_prod_por_prov_hasta_10 = sql^Consultai2_3
 
-sns.boxplot(data = cant_prod_por_prov, x = 'provincia' , y = 'productos_por_operador').set(title= 'Cantidad de productos que produce un operador por provincia', xlabel = 'Prvincias' , ylabel='Cantidad de productos producidos \n por un operador')
-plt.xticks(rotation = 90)
-plt.show()
-plt.close()
+# =============================================================================
+# sns.boxplot(data = cant_prod_por_prov_hasta_10, x = 'provincia' , y = 'productos_por_operador').set(title= 'Cantidad de productos que produce un operador por provincia', xlabel = 'Provincias' , ylabel='Cantidad de productos producidos \n por un operador')
+# plt.xticks(rotation = 90)
+# plt.show()
+# plt.close()
+# =============================================================================
 
 
 #Ejercicio iii)
@@ -1358,7 +1368,7 @@ Consultai3_2 = """
                ON ep.id_departamento = dp.id_departamento
                GROUP BY dp.provincia
                """
-proporcion_mujeres_por_provincia = sql^Consultai3_2
+proporcion_mujeres_por_provincia = sql^Consultai3_2 #cambiar nombre
 
 Consultai3_3 = """
                SELECT p.proporcion_mujeres, c.cantidad, c.provincia
@@ -1368,13 +1378,14 @@ Consultai3_3 = """
                """
 proporcion_cantidad_provincia = sql^Consultai3_3
 
-
-sns.scatterplot(data=proporcion_cantidad_provincia, x="proporcion_mujeres", y="cantidad", hue="provincia").set(title='Relación entre la cantidad de operadores orgánicos \n y la proporción de mujeres empleadas por estableciomientos productivos \n en cada provincia', xlabel = 'Porcion de mujeres empleadas por estableciomientos productivos \n en promedio por provincia' , ylabel='Cantidad de operadores organicos por provincia')
-x_coord = 1.2  # Coordenada X
-y_coord = 0.5  # Coordenada Y
-plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
-plt.xlim(0, 1)
-plt.show()
+# =============================================================================
+# sns.scatterplot(data=proporcion_cantidad_provincia, x="proporcion_mujeres", y="cantidad", hue="provincia").set(title='Relación entre la cantidad de operadores orgánicos \n y la proporción de mujeres empleadas por estableciomientos productivos \n en cada provincia', xlabel = 'Porcion de mujeres empleadas por estableciomientos productivos \n en promedio por provincia' , ylabel='Cantidad de operadores organicos por provincia')
+# x_coord = 1.2  # Coordenada X
+# y_coord = 0.5  # Coordenada Y
+# plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
+# plt.xlim(0, 1)
+# plt.show()
+# =============================================================================
 
 #Ejercicio iv)
 #¿Cuál es la distribución de los datos correspondientes a la proporción de
@@ -1390,7 +1401,7 @@ Consultai4_1 = """
 proporcion_mujeres_provincia = sql^Consultai4_1
 
 sns.violinplot(data = proporcion_mujeres_provincia, x = 'provincia' , y = 'proporcion_mujeres').set(title='Distribución de la proporción de mujeres empleadas \n en establecimientos productivos por provincia', xlabel='Provincias', ylabel='Proporción de mujeres empleadas \n en establecimientos productivos')
-plt.xticks(rotation = 90)
+plt.xticks(rotation = 90) #porque hay vallores mayores a 1?, por que hay negativos?
 plt.show()
 plt.close()
 
