@@ -1,10 +1,23 @@
+"""
+Grupo: how DER you?
+
+Integrantes: Barracchia, Azul ; Guarnaccio, Augusto ; Sigal Aguirre, Mario.
+
+Contenido: importación de dataframes originales, limpieza de estos, armado 
+dataframes con datos de calidad y relevantes a nuestro objetivo, consultas
+hechas con SQL, gráficos con matplotlib y seaborn.
+
+"""
+
+
 import pandas as pd
 from inline_sql import sql, sql_val
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+# Dataframes originales
+# =============================================================================
 operadores_organicos= pd.read_csv('./TablasOriginales/padron-de-operadores-organicos-certificados.csv')
 # =============================================================================
 #
@@ -13,8 +26,6 @@ operadores_organicos= pd.read_csv('./TablasOriginales/padron-de-operadores-organ
 # incluye a: productores primarios, elaboradores y comercializadores.
 #
 # =============================================================================
-
-
 
 establecimientos_productivos = pd.read_csv('./TablasOriginales/distribucion_establecimientos_productivos_sexo.csv')
 
@@ -56,19 +67,18 @@ clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
 
 # Ejercicio e)
-
+# =============================================================================
 df_Operadores_organicos = pd.DataFrame(columns=['id','establecimiento', 'razón_social', 'id_provincia', 'id_departamento'])
 df_Producto = pd.DataFrame(columns=['producto', 'clae2']) 
 df_Departamento = pd.DataFrame(columns=['id', 'departamento', 'id_provincia'])
 df_Provincia = pd.DataFrame(columns=['id', 'provincia'])
 df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'clae2', 'proporción_mujeres', 'id_departamento'])
 df_CLAE = pd.DataFrame(columns=[ 'clae2', 'clae2_desc'])
-# relación entre operadores orgánicos y producto
-df_Relacion_Produce = pd.DataFrame(columns=['establecimiento', 'razón_social', 'producto'])
+# Relación entre operadores orgánicos y producto
+df_Relacion_Produce = pd.DataFrame(columns=['id_op_or', 'producto'])
 
 
-# Ejercicio f)
-# Limpieza 
+# Ejercicio f) - Limpieza 
 
 # Limpieza operadores orgánicos
 # =============================================================================
@@ -103,10 +113,6 @@ limpieza_operadores_organicos = """
 operadores_organicos = sql^limpieza_operadores_organicos
 # =============================================================================
 
-
-
-
-
 # Limpieza localidades
 # =============================================================================
 limpieza_localidades = """
@@ -131,8 +137,11 @@ limpieza_localidades = """
 localidades = sql^limpieza_localidades
 
 # Buscamos los departamentos con el mismo id pero de distintas provincias para cambiarlos a mano
-consultaAux = """SELECT DISTINCT id_departamento, departamento, id_provincia, provincia
-FROM localidades"""
+
+consultaAux = """
+              SELECT DISTINCT id_departamento, departamento, id_provincia, provincia
+              FROM localidades
+              """
 
 repetidos = sql^consultaAux
 consultaAux = """
@@ -144,7 +153,7 @@ consultaAux = """
 repetidos = sql^consultaAux
 
 
-# cambiamos los ids a mano
+# Cambiamos los ids a mano
 
 dataframe_chiquito= """
                     SELECT * 
@@ -181,12 +190,6 @@ localidades_sin_repetidos = """
 localidades = sql^localidades_sin_repetidos
 # =============================================================================
 
-
-
-
-
-
-
 # Limpieza clae
 # =============================================================================
 limpieza_clae = """
@@ -196,65 +199,56 @@ limpieza_clae = """
                 ORDER BY clae2 ASC
               """
 clae = sql^limpieza_clae
-
-
+# =============================================================================
 
 # Limpieza establecimientos productivos
 # =============================================================================
-# =============================================================================
-# limpieza_establecimiento_productivo = """
-#                                         SELECT ID AS id, clae2, proporcion_mujeres, in_departamentos AS id_departamento
-#                                         FROM establecimientos_productivos
-#                                         ORDER BY id ASC
-#                                     """
-# establecimiento_productivo = sql^limpieza_establecimiento_productivo
-# 
-# =============================================================================
-
 limpieza_establecimiento_productivo = """
-                                            SELECT *
-                                            FROM establecimientos_productivos as ep
-                                            WHERE ep.clae2 IN (
-                                                SELECT clae2
-                                                FROM clae
-                                                )
-                                            ORDER BY ID ASC, clae2 ASC
-                                           """
+                                        SELECT *
+                                        FROM establecimientos_productivos as ep
+                                        WHERE ep.clae2 IN (
+                                            SELECT clae2
+                                            FROM clae
+                                            )
+                                        ORDER BY ID ASC, clae2 ASC
+                                      """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo
 
 limpieza_establecimiento_productivo = """
-               SELECT *,
-                    CASE 
-                       WHEN provincia != 'CABA' 
-                           THEN in_departamentos
-                           ELSE '2001'
-                    END AS id_departamento
-                FROM establecimiento_productivo
-                """
+                                       SELECT *,
+                                            CASE 
+                                               WHEN provincia != 'CABA' 
+                                                   THEN in_departamentos
+                                                   ELSE '2001'
+                                            END AS id_departamento
+                                        FROM establecimiento_productivo
+                                      """
+                                      
 establecimiento_productivo = sql^limpieza_establecimiento_productivo    
 
 limpieza_establecimiento_productivo = """
-               SELECT *,
-                    CASE 
-                       WHEN id_departamento < 10000 
-                           THEN CONCAT('0', id_departamento)
-                           ELSE id_departamento
-                    END AS id_departamento_final
-                FROM establecimiento_productivo
-                """
+                                       SELECT *,
+                                            CASE 
+                                               WHEN id_departamento < 10000 
+                                                   THEN CONCAT('0', id_departamento)
+                                                   ELSE id_departamento
+                                            END AS id_departamento_final
+                                        FROM establecimiento_productivo
+                                      """
+                                      
 establecimiento_productivo = sql^limpieza_establecimiento_productivo 
 
 limpieza_establecimiento_productivo = """
-               SELECT *,
-                    CASE
-                       WHEN id_departamento_final = 94008 
-                       THEN 94007
-                       WHEN id_departamento_final = 94015 
-                       THEN 94014
-                       ELSE id_departamento_final
-                    END AS id_departamento_final2
-                FROM establecimiento_productivo
-                """
+                                       SELECT *,
+                                            CASE
+                                               WHEN id_departamento_final = 94008 
+                                               THEN 94007
+                                               WHEN id_departamento_final = 94015 
+                                               THEN 94014
+                                               ELSE id_departamento_final
+                                            END AS id_departamento_final2
+                                        FROM establecimiento_productivo
+                                      """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo  
 
 limpieza_establecimiento_productivo =  """
@@ -265,14 +259,7 @@ limpieza_establecimiento_productivo =  """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo                                         
 # =============================================================================
 
-
-
-
-
-
-
-
-# Armado
+# Armado de los dataframes
 
 # Armado dataframe de operadores orgánicos
 # =============================================================================                               
@@ -282,8 +269,6 @@ armado_operadores_organicos = """
                               ORDER BY id ASC
                               """
 df_Operadores_organicos = sql^armado_operadores_organicos
-
-
 # =============================================================================
 
 # Armado dataframe de departamento
@@ -293,7 +278,6 @@ armado_departamento = """
                       FROM localidades                         
                       """
 df_Departamento = sql^armado_departamento
-
 # =============================================================================
 
 # Armado dataframe de provincia
@@ -303,7 +287,6 @@ armado_provincia = """
                       FROM localidades
                      """
 df_Provincia= sql^armado_provincia
-
 # =============================================================================
 
 # Armado dataframe establecimiento productivo
@@ -332,7 +315,6 @@ armado_producto = """
                  ORDER BY producto ASC
                  """
 df_Producto = sql^armado_producto    
-
 # =============================================================================
 # Para asignar la clae correspondiente a cada producto, como no encontramos un patrón
 # ni una buena forma de hacerlo con las queries decidimos hacerlo a mano. 
@@ -340,7 +322,6 @@ df_Producto = sql^armado_producto
 # unas lineas de codigo lo que resultaba más rápido y menos tedioso que tener que hacerlo
 # con un excel.
 # =============================================================================
-
 df_Producto['clae2'] = None
 
 df_Producto.at[0, 'clae2'] = 1
@@ -943,9 +924,8 @@ df_Producto.at[597, 'clae2'] = 1
 df_Producto.at[598, 'clae2'] = 1
 # =============================================================================
 
+
 # Relaciones entre entidades
-
-
 # =============================================================================
 # Agregamos id_departamento
 agregar_id_departamento1 = """
@@ -956,9 +936,6 @@ agregar_id_departamento1 = """
                            """
 
 df_Operadores_organicos= sql^agregar_id_departamento1
-
-
-
 
 is_null = """
           SELECT DISTINCT id, establecimiento, razón_social, departamento, id_provincia
@@ -981,7 +958,7 @@ nulls_a_descartar = """
                         FROM Operadores_organicos_null
                         WHERE id_departamento IS NULL
                     """
-Nulls_a_descartar = sql^nulls_a_descartar
+nulls_a_descartar = sql^nulls_a_descartar
 
 is_not_null = """
               SELECT id, establecimiento, razón_social, departamento, id_provincia, id_departamento,
@@ -1014,16 +991,32 @@ df_Operadores_organicos = sql^union
 # =============================================================================
 # Relación entre producto y operadores orgánicos 
 
-relacion_n_m = """ 
-                SELECT id AS id_op_or, producto
-                FROM operadores_organicos
-               """
+relacion_es_producido_por = """ 
+                            SELECT id AS id_op_or, producto
+                            FROM operadores_organicos
+                           """
 
-df_Relacion_Produce = sql^relacion_n_m
+df_Relacion_Produce = sql^relacion_es_producido_por
+# =============================================================================
+# Exportamos las tablas limpias en formato .csv
+# =============================================================================
+
+df_CLAE.to_csv('./TablasLimpias/CLAE.csv')
+df_Departamento.to_csv('./TablasLimpias/Departamento.csv')
+df_Establecimiento_productivo.to_csv('./TablasLimpias/Establecimiento_productivo.csv')
+df_Operadores_organicos.to_csv('./TablasLimpias/Operadores_organicos.csv')
+df_Producto.to_csv('./TablasLimpias/Producto.csv')
+df_Provincia.to_csv('./TablasLimpias/Provincia.csv')
+df_Relacion_Produce.to_csv('./TablasLimpias/Relacion_Produce.csv')
+
+
 # =============================================================================
 
 # Ejercicio h)
-# Ejercicio i)
+# =============================================================================
+
+# Consulta 1
+# =============================================================================
 
 consultah1_1 = """
                 SELECT DISTINCT producto, id_provincia
@@ -1058,8 +1051,10 @@ consultah1_4 = """
                 """
 producto_provincia_ordenado = sql^consultah1_4
 print(producto_provincia_ordenado)
+# =============================================================================
 
-# Ejercicio ii)
+# Consulta 2
+# =============================================================================
 
 consultah2_1 =  """
                 SELECT clae2, count(clae2) as cantidad
@@ -1082,8 +1077,10 @@ consultah2_2 = """
                 """
 clae2_establecimiento_productivo = sql^consultah2_2
 print(clae2_establecimiento_productivo)
+# =============================================================================
 
-# Ejercicio iii)
+# Consulta 3
+# =============================================================================
 
 consultah3_1 =  """
                 SELECT producto, count(producto) as cantidad
@@ -1139,8 +1136,10 @@ consultah3_6 = """
                 """
 provincia_departamento = sql^consultah3_6
 print(provincia_departamento)
+# =============================================================================
 
-# Ejercicio iv)  
+# Consulta 4
+# =============================================================================
 
 consultah4_1 = """
                 SELECT DISTINCT id
@@ -1169,8 +1168,10 @@ consultah4_2 = """
 departamentos_sin_op_or = sql^consultah4_2
 
 print(departamentos_sin_op_or)
+# =============================================================================
 
-# Ejercicio v)
+# Consulta 5
+# =============================================================================
 
 consultah5_1 = """
                 SELECT ep.id, ep.proporcion_mujeres, dd.id_provincia
@@ -1213,8 +1214,10 @@ consultah5_5 = """
                 FROM promedio_desvio
                 """
 tabla_final = sql^consultah5_5
+# =============================================================================
 
-# Ejercicio vi)
+# Consulta 6
+# =============================================================================
 
 consultah6_1 = """
                 SELECT id_departamento, count(id) AS cant_establecimientos_prod
@@ -1257,12 +1260,12 @@ consultah6_4 = """
                 ON cd.id_provincia = prov.id
                 """
 cantidades_depto_prov = sql^consultah6_4
+# =============================================================================
 
+# Ejercicio I) - Visualización
+# =============================================================================
 
-# Ejercicio I)
-#Visualización
-
-#esta consulta la usaremos en la mayoria de las visualizaciones
+# Esta consulta la usaremos en la mayoria de las visualizaciones
 ConsultaDepto_Prov = """ 
                SELECT dep.id AS id_departamento, dep.departamento, 
                    prov.id AS id_provincia, prov.provincia
@@ -1272,20 +1275,8 @@ ConsultaDepto_Prov = """
                """
 Departamento_Provincia = sql^ConsultaDepto_Prov
 
-
-# Ejercicio i)
-
-#no se usa
+# Gráfico 1
 # =============================================================================
-# Consultai1_1no = """
-#                SELECT oo.id, dp.provincia
-#                FROM df_Operadores_organicos AS oo
-#                INNER JOIN Departamento_Provincia AS dp
-#                ON oo.id_departamento = dp.id_departamento
-#                """
-# op_or_por_provincia = sql^Consultai1_1no
-# =============================================================================
-
 Consultai1_1 = """
                SELECT ep.id, dp.provincia
                FROM df_Establecimiento_productivo AS ep
@@ -1294,17 +1285,12 @@ Consultai1_1 = """
                """
 est_prod_provincia = sql^Consultai1_1
 
+est_prod_provincia['provincia'].value_counts().plot.bar().set(title='Establecimientos productivos por provincia', xlabel='Provincias', ylabel='Cantidad de establecimientos productivos')
+plt.show()
+plt.close()
+
+# Gráfico 2
 # =============================================================================
-# est_prod_provincia['provincia'].value_counts().plot.bar().set(title='Establecimientos productivos por provincia', xlabel='Provincias', ylabel='Cantidad de establecimientos productivos')
-# plt.show()
-# plt.close()
-# =============================================================================
-
-#Ejercicio ii)
-#Boxplot, por cada provincia, 
-#donde se pueda observar la cantidad de productos por operador
-
-
 Consultai2_1 = """
                SELECT rp.producto, rp.id_op_or, op.id_provincia
                FROM df_Relacion_Produce AS rp
@@ -1332,25 +1318,18 @@ Consultai2_3 = """
                """
 cant_prod_por_prov_hasta_10 = sql^Consultai2_3
 
+sns.boxplot(data = cant_prod_por_prov_hasta_10, x = 'provincia' , y = 'productos_por_operador').set(title= 'Cantidad de productos que produce un operador por provincia', xlabel = 'Provincias' , ylabel='Cantidad de productos producidos \n por un operador')
+plt.xticks(rotation = 90)
+plt.show()
+plt.close()
+
+
+# Gráfico 3
 # =============================================================================
-# sns.boxplot(data = cant_prod_por_prov_hasta_10, x = 'provincia' , y = 'productos_por_operador').set(title= 'Cantidad de productos que produce un operador por provincia', xlabel = 'Provincias' , ylabel='Cantidad de productos producidos \n por un operador')
-# plt.xticks(rotation = 90)
-# plt.show()
-# plt.close()
-# =============================================================================
 
+# Los establecimientos productivos que tienen clae 2 e {1,2,3,10,20,21} ya los tenemos filtrados, son los del df_Establecimiento_productivo
 
-#Ejercicio iii)
-
-#Relación entre cantidad de establecimientos de operadores orgánicos 
-#certificados de cada provincia y la proporción de mujeres empleadas en
-#establecimientos productivos de dicha provincia. Para este punto deberán
-#generar una tabla de equivalencia, de manera manual, entre la letra de CLAE
-#y el rubro de del operador orgánico.
-
-# los establecimientos productivos que tienen clae 2 e {1,2,3,10,20,21} ya los tenemos filtrados, son los del df_Establecimiento_productivo
-
-#Cantidad de establecimientos productivos por provincia
+# Cantidad de establecimientos productivos por provincia
 Consultai3_1 = """
                SELECT dp.provincia, count(dp.provincia) AS cantidad
                FROM df_Operadores_organicos AS oo
@@ -1360,9 +1339,9 @@ Consultai3_1 = """
                """
 cantidad_op_or_por_provincia = sql^Consultai3_1
 
-# promedio de proporcion de mujeres por provincia
+# Promedio de proporcion de mujeres por provincia
 Consultai3_2 = """
-               SELECT DISTINCT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
+               SELECT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
                FROM df_Establecimiento_productivo AS ep
                INNER JOIN Departamento_Provincia AS dp
                ON ep.id_departamento = dp.id_departamento
@@ -1373,25 +1352,20 @@ proporcion_mujeres_por_provincia = sql^Consultai3_2 #cambiar nombre
 Consultai3_3 = """
                SELECT p.proporcion_mujeres, c.cantidad, c.provincia
                FROM cantidad_op_or_por_provincia AS c
-               LEFT OUTER JOIN proporcion_mujeres_por_provincia AS p
+               INNER JOIN proporcion_mujeres_por_provincia AS p
                ON c.provincia = p.provincia
                """
 proporcion_cantidad_provincia = sql^Consultai3_3
 
-# =============================================================================
-# sns.scatterplot(data=proporcion_cantidad_provincia, x="proporcion_mujeres", y="cantidad", hue="provincia").set(title='Relación entre la cantidad de operadores orgánicos \n y la proporción de mujeres empleadas por estableciomientos productivos \n en cada provincia', xlabel = 'Porcion de mujeres empleadas por estableciomientos productivos \n en promedio por provincia' , ylabel='Cantidad de operadores organicos por provincia')
-# x_coord = 1.2  # Coordenada X
-# y_coord = 0.5  # Coordenada Y
-# plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
-# plt.xlim(0, 1)
-# plt.show()
-# =============================================================================
+sns.scatterplot(data=proporcion_cantidad_provincia, x="proporcion_mujeres", y="cantidad", hue="provincia").set(title='Relación entre la cantidad de operadores orgánicos \n y la proporción de mujeres empleadas por estableciomientos productivos \n en cada provincia', xlabel = 'Porcion de mujeres empleadas por estableciomientos productivos \n en promedio por provincia' , ylabel='Cantidad de operadores organicos por provincia')
+x_coord = 1.2  # Coordenada X
+y_coord = 0.5  # Coordenada Y
+plt.legend(loc='center left', bbox_to_anchor=(x_coord, y_coord))
+plt.xlim(0, 1)
+plt.show()
 
-#Ejercicio iv)
-#¿Cuál es la distribución de los datos correspondientes a la proporción de
-#mujeres empleadas en establecimientos productivos en Argentina? 
-#Realicen un violinplot por cada provincia. Mostrarlo en un solo gráfico.
-
+# Gráfico 4
+# =============================================================================
 Consultai4_1 = """
                SELECT ep.proporcion_mujeres, dp.provincia
                FROM df_Establecimiento_productivo AS ep
