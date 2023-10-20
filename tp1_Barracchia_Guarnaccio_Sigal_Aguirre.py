@@ -1307,7 +1307,7 @@ Consultai3_1 = """
 cantidad_op_or_por_provincia = sql^Consultai3_1
 
 # Nos quedamos con los datos de establecimientos productivos que estan en departamentos con operadores organicos 
-Consultabis = """
+Consultai3_2 = """
                 SELECT *
                 FROM df_Establecimiento_productivo
                 EXCEPT
@@ -1316,25 +1316,25 @@ Consultabis = """
                 INNER JOIN id_departamentos_sin_op_or as i
                 ON ep.id_departamento = i.id
               """
-establecimientos_productivos_organicos = sql^Consultabis
+establecimientos_productivos_organicos = sql^Consultai3_2
 
 # Promedio de proporcion de mujeres por provincia
-Consultai3_2 = """
+Consultai3_3 = """
                SELECT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
                FROM establecimientos_productivos_organicos AS ep
                INNER JOIN Departamento_Provincia AS dp
                ON ep.id_departamento = dp.id_departamento
                GROUP BY dp.provincia
                """
-proporcion_mujeres_por_provincia = sql^Consultai3_2
+proporcion_mujeres_por_provincia = sql^Consultai3_3
 
-Consultai3_3 = """
+Consultai3_4 = """
                SELECT p.proporcion_mujeres, c.cantidad, c.provincia
                FROM cantidad_op_or_por_provincia AS c
                INNER JOIN proporcion_mujeres_por_provincia AS p
                ON c.provincia = p.provincia
                """
-proporcion_cantidad_provincia = sql^Consultai3_3
+proporcion_cantidad_provincia = sql^Consultai3_4
 
 sns.scatterplot(data=proporcion_cantidad_provincia, x="proporcion_mujeres", y="cantidad", hue="provincia").set(title='Relación entre la cantidad de operadores orgánicos \n y la proporción de mujeres empleadas por estableciomientos productivos \n en cada provincia', xlabel = 'Porcion de mujeres empleadas por estableciomientos productivos \n en promedio por provincia' , ylabel='Cantidad de operadores organicos por provincia')
 x_coord = 1.2  # Coordenada X
