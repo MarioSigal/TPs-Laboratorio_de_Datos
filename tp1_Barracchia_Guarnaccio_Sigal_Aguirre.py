@@ -1014,7 +1014,7 @@ consultah1_4 = """
                 """
 producto_provincia_ordenado = sql^consultah1_4
 print(producto_provincia_ordenado)
-
+producto_provincia_ordenado.to_csv('./TablasEjercicios/H1_producto_provincia_ordenado.csv')
 # Consulta 2
 # =============================================================================
 
@@ -1039,7 +1039,7 @@ consultah2_2 = """
                 """
 clae2_establecimiento_productivo = sql^consultah2_2
 print(clae2_establecimiento_productivo)
-
+clae2_establecimiento_productivo.to_csv('./TablasEjercicios/H2_clae2_establecimiento_productivo.csv')
 
 # Consulta 3
 # =============================================================================
@@ -1063,7 +1063,7 @@ consultah3_2 = """
                 """
 producto_mas_producido = sql^consultah3_2
 print(producto_mas_producido)
-
+producto_mas_producido.to_csv('./TablasEjercicios/H3_1_producto_mas_producido.csv')
 # ¿Qué Provincia-Departamento los producen?
 
 consultah3_3 = """
@@ -1100,7 +1100,7 @@ consultah3_6 = """
                 """
 provincia_departamento_producto_mas_producido = sql^consultah3_6
 print(provincia_departamento_producto_mas_producido)
-
+provincia_departamento_producto_mas_producido.to_csv('./TablasEjercicios/H3_2_provincia_departamento_producto_mas_producido.csv')
 # Consulta 4
 # =============================================================================
 
@@ -1120,7 +1120,7 @@ consultah4_2 = """
                 """
 cant_deptos_sin_op_or = sql^consultah4_2
 print(cant_deptos_sin_op_or)
-
+cant_deptos_sin_op_or.to_csv('./TablasEjercicios/H4_1_cant_deptos_sin_op_or.csv')
 # ¿Cuales son?
 consultah4_2 = """
                 SELECT dd.departamento
@@ -1131,7 +1131,7 @@ consultah4_2 = """
 departamentos_sin_op_or = sql^consultah4_2
 
 print(departamentos_sin_op_or)
-
+departamentos_sin_op_or.to_csv('./TablasEjercicios/H4_2_departamentos_sin_op_or.csv')
 # Consulta 5
 # =============================================================================
 consultah5_1 = """
@@ -1176,7 +1176,7 @@ consultah5_5 = """
                 """
 tabla_prop_mujeres_prom_desvio_mayor_menor = sql^consultah5_5
 print(tabla_prop_mujeres_prom_desvio_mayor_menor)
-
+tabla_prop_mujeres_prom_desvio_mayor_menor.to_csv('./TablasEjercicios/H5_tabla_prop_mujeres_prom_desvio_mayor_menor.csv')
 # Consulta 6
 # =============================================================================
 consultah6_1 = """
@@ -1221,7 +1221,7 @@ consultah6_4 = """
                 """
 cantidades_depto_prov = sql^consultah6_4
 print(cantidades_depto_prov)
-
+cantidades_depto_prov.to_csv('./TablasEjercicios/H6_cantidades_depto_prov.csv')
 
 # Ejercicio I) - Visualización
 # =============================================================================
