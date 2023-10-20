@@ -1305,7 +1305,8 @@ Consultai3_1 = """
                GROUP BY provincia
                """
 cantidad_op_or_por_provincia = sql^Consultai3_1
-# =============================================================================
+
+# Nos quedamos con los datos de establecimientos productivos que estan en departamentos con operadores organicos 
 Consultabis = """
                 SELECT *
                 FROM df_Establecimiento_productivo
@@ -1315,13 +1316,12 @@ Consultabis = """
                 INNER JOIN id_departamentos_sin_op_or as i
                 ON ep.id_departamento = i.id
               """
-tabla_troll = sql^Consultabis
-# =============================================================================
+establecimientos_productivos_organicos = sql^Consultabis
 
 # Promedio de proporcion de mujeres por provincia
 Consultai3_2 = """
                SELECT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
-               FROM tabla_troll AS ep
+               FROM establecimientos_productivos_organicos AS ep
                INNER JOIN Departamento_Provincia AS dp
                ON ep.id_departamento = dp.id_departamento
                GROUP BY dp.provincia
