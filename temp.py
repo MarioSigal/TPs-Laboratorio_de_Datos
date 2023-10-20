@@ -12,69 +12,38 @@ hechas con SQL, gráficos con matplotlib y seaborn.
 
 import pandas as pd
 from inline_sql import sql, sql_val
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Dataframes originales
 # =============================================================================
 operadores_organicos= pd.read_csv('./TablasOriginales/padron-de-operadores-organicos-certificados.csv')
-# =============================================================================
-#
-# Listado de operadores orgánicos certificados:
-#  
-# incluye a: productores primarios, elaboradores y comercializadores.
-#
-# =============================================================================
 
 establecimientos_productivos = pd.read_csv('./TablasOriginales/distribucion_establecimientos_productivos_sexo.csv')
 
-# =============================================================================
-#
-# Distribución geográfica de los establecimientos productivos.
-# 
-# Base de datos que contiene coordenadas de los establecimientos productivos (no necesariamente orgánicos) con su 
-# respectiva actividad económica, su nivel de empleo, jurisdicción y proporción de mujeres
-#
-# =============================================================================
-
 localidades = pd.read_csv('./TablasOriginales/localidad_bahra.csv')
-
-# =============================================================================
-#
-# Localidades de la Base de Asentamientos Humanos de la República Argentina
-#
-# Esta fuente permite asociar a la fuente primaria “Padrón de Operadores Orgánicos
-# Certificados” con los datos de departamento. Lamentablemente la fuente primaria,
-# en su campo departamento parece mezclar datos de departamento y ciudad, entre
-# otras cosas. Esa fuente también tiene inconvenientes en cuanto al formato y
-# escritura de los nombres (por ejemplo, no parecen contar con tildes, etc.). Deberán
-# hacer lo necesario para curar y vincular los datos.
-# 
-# =============================================================================
 
 clae = pd.read_csv('./TablasOriginales/clae_agg.csv')
 
-# =============================================================================
-# 
-# Diccionario de CLAE: 
-# 
-# Dicha fuente contiene los nomencladores utilizados por AFIP
-# para clasificar actividades con su correspondiente descripción.
-# permite asociar a la fuente primaria “establecimiento productivo” los datos de actividades.
-# 
-# =============================================================================
 
 
 # Ejercicio e)
 # =============================================================================
+
 df_Operadores_organicos = pd.DataFrame(columns=['id','establecimiento', 'razón_social', 'id_provincia', 'id_departamento'])
+
 df_Producto = pd.DataFrame(columns=['producto', 'clae2']) 
+
 df_Departamento = pd.DataFrame(columns=['id', 'departamento', 'id_provincia'])
+
 df_Provincia = pd.DataFrame(columns=['id', 'provincia'])
+
 df_Establecimiento_productivo = pd.DataFrame(columns=['id', 'clae2', 'proporción_mujeres', 'id_departamento'])
+
 df_CLAE = pd.DataFrame(columns=[ 'clae2', 'clae2_desc'])
+
 # Relación entre operadores orgánicos y producto
+
 df_Relacion_Produce = pd.DataFrame(columns=['id_op_or', 'producto'])
 
 
@@ -82,7 +51,7 @@ df_Relacion_Produce = pd.DataFrame(columns=['id_op_or', 'producto'])
 
 # Limpieza operadores orgánicos
 # =============================================================================
-#agregamos clave
+# Agregamos una clave
 for i in range(len(operadores_organicos)):
     operadores_organicos.at[i, 'id'] = i
 
@@ -111,7 +80,7 @@ limpieza_operadores_organicos = """
                                 ORDER BY id_provincia ASC
                                 """
 operadores_organicos = sql^limpieza_operadores_organicos
-# =============================================================================
+
 
 # Limpieza localidades
 # =============================================================================
@@ -177,7 +146,7 @@ localidades = sql^localidades_sin_id_repetido
 localidades1.at[0,'id_departamento'] = '95001'
 localidades1.at[5,'id_departamento'] = '95002'
 localidades1.at[22 ,'id_departamento'] = '95003'
-localidades1.at[23 ,'id_departamento'] = '95003'
+localidades1.at[23 ,'id_departamento'] = '95003' # Son dos asentamientos de un mismo departamento
 localidades1.at[34 ,'id_departamento'] = '95004'
 
 localidades_sin_repetidos = """
@@ -188,7 +157,7 @@ localidades_sin_repetidos = """
                             FROM localidades1
                             """
 localidades = sql^localidades_sin_repetidos
-# =============================================================================
+
 
 # Limpieza clae
 # =============================================================================
@@ -199,7 +168,6 @@ limpieza_clae = """
                 ORDER BY clae2 ASC
               """
 clae = sql^limpieza_clae
-# =============================================================================
 
 # Limpieza establecimientos productivos
 # =============================================================================
@@ -257,7 +225,7 @@ limpieza_establecimiento_productivo =  """
                                         FROM establecimiento_productivo
                                         """
 establecimiento_productivo = sql^limpieza_establecimiento_productivo                                         
-# =============================================================================
+
 
 # Armado de los dataframes
 
@@ -269,7 +237,8 @@ armado_operadores_organicos = """
                               ORDER BY id ASC
                               """
 df_Operadores_organicos = sql^armado_operadores_organicos
-# =============================================================================
+
+# Más adelante cuando se hagan las relaciones se pondrá el id_departamento reemplazando departamento
 
 # Armado dataframe de departamento
 # =============================================================================
@@ -278,7 +247,7 @@ armado_departamento = """
                       FROM localidades                         
                       """
 df_Departamento = sql^armado_departamento
-# =============================================================================
+
 
 # Armado dataframe de provincia
 # =============================================================================
@@ -287,7 +256,6 @@ armado_provincia = """
                       FROM localidades
                      """
 df_Provincia= sql^armado_provincia
-# =============================================================================
 
 # Armado dataframe establecimiento productivo
 # =============================================================================
@@ -296,7 +264,7 @@ armado_establecimiento_productivo = """
                                     FROM establecimiento_productivo
                                     """
 df_Establecimiento_productivo = sql^armado_establecimiento_productivo
-# =============================================================================
+
 
 # Armado dataframe de CLAE
 # =============================================================================
@@ -305,7 +273,7 @@ armado_clae = """
                 FROM clae
                 """
 df_CLAE = sql^armado_clae
-# =============================================================================
+
 
 # Armado dataframe de producto
 # =============================================================================
@@ -922,7 +890,6 @@ df_Producto.at[595, 'clae2'] = 1
 df_Producto.at[596, 'clae2'] = 1
 df_Producto.at[597, 'clae2'] = 1
 df_Producto.at[598, 'clae2'] = 1
-# =============================================================================
 
 
 # Relaciones entre entidades
@@ -958,7 +925,7 @@ nulls_a_descartar = """
                         FROM Operadores_organicos_null
                         WHERE id_departamento IS NULL
                     """
-nulls_a_descartar = sql^nulls_a_descartar
+Nulls_a_descartar = sql^nulls_a_descartar
 
 is_not_null = """
               SELECT id, establecimiento, razón_social, departamento, id_provincia, id_departamento,
@@ -985,19 +952,17 @@ union = """
         ORDER BY id ASC
         """
 df_Operadores_organicos = sql^union
-# =============================================================================
 
-
-# =============================================================================
 # Relación entre producto y operadores orgánicos 
-
+# =============================================================================
 relacion_es_producido_por = """ 
                             SELECT id AS id_op_or, producto
                             FROM operadores_organicos
                            """
 
 df_Relacion_Produce = sql^relacion_es_producido_por
-# =============================================================================
+
+
 # Exportamos las tablas limpias en formato .csv
 # =============================================================================
 
@@ -1009,8 +974,6 @@ df_Producto.to_csv('./TablasLimpias/Producto.csv')
 df_Provincia.to_csv('./TablasLimpias/Provincia.csv')
 df_Relacion_Produce.to_csv('./TablasLimpias/Relacion_Produce.csv')
 
-
-# =============================================================================
 
 # Ejercicio h)
 # =============================================================================
@@ -1051,7 +1014,6 @@ consultah1_4 = """
                 """
 producto_provincia_ordenado = sql^consultah1_4
 print(producto_provincia_ordenado)
-# =============================================================================
 
 # Consulta 2
 # =============================================================================
@@ -1077,7 +1039,7 @@ consultah2_2 = """
                 """
 clae2_establecimiento_productivo = sql^consultah2_2
 print(clae2_establecimiento_productivo)
-# =============================================================================
+
 
 # Consulta 3
 # =============================================================================
@@ -1088,6 +1050,8 @@ consultah3_1 =  """
                 GROUP BY producto
                 """
 producto_cantidad = sql^consultah3_1
+
+# ¿Qué producto es el más producido?
 
 consultah3_2 = """
                 SELECT pc1.producto
@@ -1134,9 +1098,8 @@ consultah3_6 = """
                 INNER JOIN df_Departamento
                 ON id = id_departamento
                 """
-provincia_departamento = sql^consultah3_6
-print(provincia_departamento)
-# =============================================================================
+provincia_departamento_producto_mas_producido = sql^consultah3_6
+print(provincia_departamento_producto_mas_producido)
 
 # Consulta 4
 # =============================================================================
@@ -1150,7 +1113,7 @@ consultah4_1 = """
                 """
 id_departamentos_sin_op_or = sql^consultah4_1
 
-#Cuántos son?: 
+# ¿Cuántos son? 
 consultah4_2 = """
                 SELECT count(id) AS deptos_sin_op_or
                 FROM id_departamentos_sin_op_or
@@ -1158,7 +1121,7 @@ consultah4_2 = """
 cant_deptos_sin_op_or = sql^consultah4_2
 print(cant_deptos_sin_op_or)
 
-#Cuales son:
+# ¿Cuales son?
 consultah4_2 = """
                 SELECT dd.departamento
                 FROM id_departamentos_sin_op_or AS idsoo
@@ -1168,11 +1131,9 @@ consultah4_2 = """
 departamentos_sin_op_or = sql^consultah4_2
 
 print(departamentos_sin_op_or)
-# =============================================================================
 
 # Consulta 5
 # =============================================================================
-
 consultah5_1 = """
                 SELECT ep.id, ep.proporcion_mujeres, dd.id_provincia
                 FROM df_Establecimiento_productivo AS ep
@@ -1200,25 +1161,24 @@ consultah5_4 = """
                 SELECT AVG(proporcion_mujeres) AS promedio_pais
                 FROM proporcion_mujeres_provincia
                 """
-promedio_pais = sql^consultah5_4
+promedio_prop_mujeres_pais = sql^consultah5_4
 
-promedioPais = float(promedio_pais['promedio_pais'])
+promedioPropPais = float(promedio_prop_mujeres_pais['promedio_pais'])
 
 consultah5_5 = """
                 SELECT *, 
                     CASE
-                        WHEN promedio > $promedioPais
+                        WHEN promedio > $promedioPropPais
                         THEN 'mayor'
                         ELSE 'menor'
-                    END AS mayor_a_promedio_pais
+                    END AS mayor_o_menor_promedio_pais
                 FROM promedio_desvio
                 """
-tabla_final = sql^consultah5_5
-# =============================================================================
+tabla_prop_mujeres_prom_desvio_mayor_menor = sql^consultah5_5
+print(tabla_prop_mujeres_prom_desvio_mayor_menor)
 
 # Consulta 6
 # =============================================================================
-
 consultah6_1 = """
                 SELECT id_departamento, count(id) AS cant_establecimientos_prod
                 FROM df_Establecimiento_productivo
@@ -1260,11 +1220,11 @@ consultah6_4 = """
                 ON cd.id_provincia = prov.id
                 """
 cantidades_depto_prov = sql^consultah6_4
-# =============================================================================
+print(cantidades_depto_prov)
+
 
 # Ejercicio I) - Visualización
 # =============================================================================
-
 # Esta consulta la usaremos en la mayoria de las visualizaciones
 ConsultaDepto_Prov = """ 
                SELECT dep.id AS id_departamento, dep.departamento, 
@@ -1308,8 +1268,15 @@ Consultai2_2 = """
                """
 cant_prod_por_prov = sql^Consultai2_2
 
-#como hay datos operadores organicos que producen muchos mas productos del promedio, la visualizacion anterios mustra los datos de manera "desproporcionada" 
-#para una visualizacion mas clara usar la variable "cant_prod_por_prov_hasta_10" en vez de "cant_prod_por_prov"
+sns.boxplot(data = cant_prod_por_prov, x = 'provincia' , y = 'productos_por_operador').set(title= 'Cantidad de productos que produce un operador por provincia', xlabel = 'Provincias' , ylabel='Cantidad de productos producidos \n por un operador')
+plt.xticks(rotation = 90)
+plt.show()
+plt.close()
+
+# Como hay datos operadores organicos que producen muchos mas productos del 
+# promedio, la visualizacion anterios mustra los datos de manera "desproporcionada".
+# Para una visualizacion mas clara usar la variable "cant_prod_por_prov_hasta_10"
+# en vez de "cant_prod_por_prov"
 
 Consultai2_3 = """
                SELECT *
@@ -1326,8 +1293,8 @@ plt.close()
 
 # Gráfico 3
 # =============================================================================
-
-# Los establecimientos productivos que tienen clae 2 e {1,2,3,10,20,21} ya los tenemos filtrados, son los del df_Establecimiento_productivo
+# Los establecimientos productivos que tienen clae 2 e {1,2,3,10,20,21} ya los 
+# tenemos filtrados, son los del df_Establecimiento_productivo
 
 # Cantidad de establecimientos productivos por provincia
 Consultai3_1 = """
@@ -1338,16 +1305,28 @@ Consultai3_1 = """
                GROUP BY provincia
                """
 cantidad_op_or_por_provincia = sql^Consultai3_1
+# =============================================================================
+Consultabis = """
+                SELECT *
+                FROM df_Establecimiento_productivo
+                EXCEPT
+                SELECT ep.*
+                FROM df_Establecimiento_productivo as ep
+                INNER JOIN id_departamentos_sin_op_or as i
+                ON ep.id_departamento = i.id
+              """
+tabla_troll = sql^Consultabis
+# =============================================================================
 
 # Promedio de proporcion de mujeres por provincia
 Consultai3_2 = """
                SELECT AVG(ep.proporcion_mujeres) AS proporcion_mujeres, dp.provincia
-               FROM df_Establecimiento_productivo AS ep
+               FROM tabla_troll AS ep
                INNER JOIN Departamento_Provincia AS dp
                ON ep.id_departamento = dp.id_departamento
                GROUP BY dp.provincia
                """
-proporcion_mujeres_por_provincia = sql^Consultai3_2 #cambiar nombre
+proporcion_mujeres_por_provincia = sql^Consultai3_2
 
 Consultai3_3 = """
                SELECT p.proporcion_mujeres, c.cantidad, c.provincia
@@ -1375,7 +1354,7 @@ Consultai4_1 = """
 proporcion_mujeres_provincia = sql^Consultai4_1
 
 sns.violinplot(data = proporcion_mujeres_provincia, x = 'provincia' , y = 'proporcion_mujeres').set(title='Distribución de la proporción de mujeres empleadas \n en establecimientos productivos por provincia', xlabel='Provincias', ylabel='Proporción de mujeres empleadas \n en establecimientos productivos')
-plt.xticks(rotation = 90) #porque hay vallores mayores a 1?, por que hay negativos?
+plt.xticks(rotation = 90)
 plt.show()
 plt.close()
 
