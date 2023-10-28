@@ -25,8 +25,9 @@ fashion_mnist = pd.read_csv('./fashion-mnist.csv')
 
 # función que trasforma la fila de una prenda en específico, con sus 784 
 # pixeles, en una imagen. 0 <= num_fila < 60000
-def visualizar_prenda(df, num_fila):
-    data = df.values
+def visualizar_prenda(num_fila):
+    etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
+    data = fashion_mnist.values
     pixel_values = data[num_fila][1:]
     
     # Convertir los valores de píxeles a una matriz de 28x28
@@ -34,13 +35,13 @@ def visualizar_prenda(df, num_fila):
     
     # Mostrar la imagen usando matplotlib
     plt.imshow(image_array, cmap='gray')  # 'gray' para mostrar la imagen en escala de grises
-    plt.title(f'Imagen {num_fila + 1}')
+    plt.title(etiqueta[data[num_fila][0]])
     plt.axis('off')
     plt.show()
 
 #%%
 
-visualizar_prenda(fashion_mnist, 9999)
+visualizar_prenda(9999)
 
 #%%
 # Ejercicio 1
@@ -57,7 +58,14 @@ ultimo_pixel['pixel784'].unique()
 len(ultimo_pixel['pixel784'].unique())
 
 #grafico??
-
+zero_counts = np.sum(fashion_mnist == 0, axis=0)
+ax = zero_counts.plot.bar().set(title='cantidad de 0s')
+ax.plt.xlabel('pixeles')
+ax.plt.ylabel('Cantidad de ceros')
+ax.plt.show()
+ax.plt.close()
+# los pixeles con más cantidad de 0s son los menos relevantes
+#arreglar
 
 del primer_pixel, ultimo_pixel
 #%%
