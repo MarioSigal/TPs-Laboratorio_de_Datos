@@ -56,17 +56,22 @@ fashion_mnist['label'].unique() # cuántas son las labels
 fashion_mnist['label'].value_counts() # qué cantidad hay de cada categoría
 
 # Imagen promedio de cada prenda
+fashion_mnist_promedios_prenda = pd.DataFrame(columns=[fashion_mnist.columns])
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 for j in range(10):
     prenda = fashion_mnist[fashion_mnist['label'] == j]
+    fashion_mnist_promedios_prenda.at[j,'label'] = j
     imagen = np.zeros(784)
     for i in range(1, 785):
+        fashion_mnist_promedios_prenda.at[j, f'pixel{i}'] = prenda[f'pixel{i}'].mean()
         imagen[i-1] = prenda[f'pixel{i}'].mean()
     plt.title(etiqueta[j])
     image_array = np.array(imagen).reshape(28, 28) 
     plt.imshow(image_array, cmap='plasma')  
     plt.axis('off')
     plt.show()
+
+fashion_mnist_promedios_prenda.tail()
 
 # nuevo dataFrame con los valores promedio de todas las prendas juntas
 fashion_mnist_promedios = pd.DataFrame()
@@ -97,8 +102,21 @@ for j in range(10):
     plt.imshow(image_array, cmap='plasma')  
     plt.axis('off')
     plt.show()
-    
 # lo que está mas fuerte y clarito es lo que se desvia más del promedio? o sea lo más oscuro es lo importante para predecir la prenda?
+
+# Superpuestos
+plt.scatter(np.arange(0, 29), fashion_mnist_promedios_prenda.iloc[0,1:30])
+plt.scatter(np.arange(0, 29), fashion_mnist_promedios_prenda.iloc[0,31:60])
+plt.scatter(np.arange(0, 29), fashion_mnist_promedios_prenda.iloc[0,61:90])
+
+fashion_mnist_promedios_prenda.head()
+sns.kdeplot(data=np.transpose(fashion_mnist_promedios_prenda), x = 'pixel1', hue = 'label')
+
+sns.scatterplot(fashion_mnist_promedios_prenda, hue = 'label')
+
+plt.hist(fashion_mnist_promedios_prenda.iloc[0, 1:], bins=50)
+x.ticks
+plt.hist(fashion_mnist_promedios_prenda.iloc[2, 1:],)
 del imagen, etiqueta, prenda, j, i, image_array
 #%%
 # b) ¿Hay clases de prendas que son parecidas entre sí? Por ejemplo, ¿Qué es 
