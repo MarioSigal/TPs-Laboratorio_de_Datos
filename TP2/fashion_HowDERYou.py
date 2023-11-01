@@ -19,6 +19,7 @@ import sklearn
 # Importación de datos
 
 fashion_mnist = pd.read_csv('./fashion-mnist.csv')
+fashion_mnist.head()
 
 #%%
 # Definición de funciones
@@ -26,7 +27,7 @@ fashion_mnist = pd.read_csv('./fashion-mnist.csv')
 # función que trasforma la fila de una prenda en específico, con sus 784 
 # pixeles, en una imagen. 0 <= num_fila < 60000
 def visualizar_prenda(df, num_fila):
-    etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas', 'Promedio']
+    etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
     data = df.values
     pixel_values = data[num_fila][1:]
     
@@ -42,36 +43,19 @@ def visualizar_prenda(df, num_fila):
 #%%
 
 visualizar_prenda(fashion_mnist,1)
+
 #%%
 # Ejercicio 1
 # a) ¿Cuáles parecen ser atributos relevantes para predecir el tipo de prenda?
 # ¿Cuáles no? ¿Creen que se pueden descartar atributos?
 
+# exploración de datos
+fashion_mnist.info() # cantidad de filas, columnas y tipo de datos
+fashion_mnist['label'].unique() # cuántas son las labels
+# Number of data points under each label
+fashion_mnist['label'].value_counts() # qué cantidad hay de cada categoría
 
-primer_pixel = fashion_mnist[['pixel1']]
-ultimo_pixel = fashion_mnist[['pixel784']]
-
-primer_pixel['pixel1'].unique()         #este capaz se puede sacar
-len(primer_pixel['pixel1'].unique())
-
-# pixel 2 tiene 17 
-ultimo_pixel['pixel784'].unique()
-len(ultimo_pixel['pixel784'].unique())
-
-del primer_pixel, ultimo_pixel
-
-#contamos 0s
-zero_counts = np.sum(fashion_mnist == 0, axis=0)
-ax = zero_counts.plot.bar().set(title='cantidad de 0s')
-ax.plt.xlabel('pixeles')
-ax.plt.ylabel('Cantidad de ceros')
-ax.plt.show()
-ax.plt.close()
-
-del ax
-# Crear un gráfico de barras para representar la cantidad de ceros en cada columna
-
-# Imagen promedio 
+# Imagen promedio de cada prenda
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 for j in range(10):
     prenda = fashion_mnist[fashion_mnist['label'] == j]
@@ -84,31 +68,38 @@ for j in range(10):
     plt.axis('off')
     plt.show()
 
-
-
-
+# nuevo dataFrame con los valores promedio de todas las prendas juntas
 fashion_mnist_promedios = pd.DataFrame()
 fashion_mnist_promedios['label'] = 10 
 for i in range(1,785):
     fashion_mnist_promedios[f'pixel{i}'] = [fashion_mnist[f'pixel{i}'].mean()]
-# Imagen desvio estandar ()
 
-
+# imagen de los valores promedios de todas las prendas juntas
 imagen = np.zeros(784)
 for i in range(1, 785):
     imagen[i-1] = fashion_mnist_promedios[f'pixel{i}']
 image_array = np.array(imagen).reshape(28, 28) 
+plt.title('Imagen promedio')
 plt.imshow(image_array, cmap='plasma')  
 plt.axis('off')
 plt.show()
 
 
+# Imagen desvio estandar 
 
-
-#grafico??
-
-
-del primer_pixel, ultimo_pixel
+for j in range(10):
+    prenda = fashion_mnist[fashion_mnist['label'] == j]
+    imagen = np.zeros(784)
+    for i in range(1, 785):
+        imagen[i-1] = prenda[f'pixel{i}'].std()
+    plt.title(etiqueta[j])
+    image_array = np.array(imagen).reshape(28, 28) 
+    plt.imshow(image_array, cmap='plasma')  
+    plt.axis('off')
+    plt.show()
+    
+# lo que está mas fuerte y clarito es lo que se desvia más del promedio? o sea lo más oscuro es lo importante para predecir la prenda?
+del imagen, etiqueta, prenda, j, i, image_array
 #%%
 # b) ¿Hay clases de prendas que son parecidas entre sí? Por ejemplo, ¿Qué es 
 # más fácil de diferenciar: remeras de pantalones o remeras de pullovers?
