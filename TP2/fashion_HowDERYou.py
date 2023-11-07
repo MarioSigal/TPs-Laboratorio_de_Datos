@@ -14,7 +14,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn 
-
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 #%%
 # Importación de datos
 
@@ -45,16 +48,11 @@ def visualizar_prenda(num_fila):
 visualizar_prenda(425)
 
 #%%
-# Ejercicio 1
-# a) ¿Cuáles parecen ser atributos relevantes para predecir el tipo de prenda?
-# ¿Cuáles no? ¿Creen que se pueden descartar atributos?
-
-# exploración de datos
+# Exploración del dataframe
 fashion_mnist.info() # cantidad de filas, columnas y tipo de datos
 fashion_mnist['label'].unique() # cuántas son las labels
-# Number of data points under each label
 fashion_mnist['label'].value_counts() # qué cantidad hay de cada categoría
-
+#%%
 # Imagen promedio de cada prenda
 fashion_mnist_promedios_prenda = pd.DataFrame()
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
@@ -71,14 +69,18 @@ for j in range(10):
     plt.axis('off')
     plt.show()
 
-
-# nuevo dataFrame con los valores promedio de todas las prendas juntas
+del imagen, prenda, j, i, image_array
+#%%
+# Nuevo dataFrame con los valores promedio de todas las prendas juntas
 fashion_mnist_promedios = pd.DataFrame()
 fashion_mnist_promedios['label'] = [10] 
 for i in range(1,785):
     fashion_mnist_promedios[f'pixel{i}'] = [fashion_mnist[f'pixel{i}'].mean()]
 
-# imagen de los valores promedios de todas las prendas juntas
+del i 
+#%%
+# Imagen de los valores promedios de todas las prendas juntas
+etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 imagen_prom = np.zeros(784)
 for i in range(1, 785):
     imagen_prom[i-1] = fashion_mnist_promedios[f'pixel{i}']
@@ -88,17 +90,7 @@ plt.imshow(image_array, cmap='Blues')
 plt.axis('off')
 plt.show()
 
-# =============================================================================
-# Conclusión:
-#     Los atributos relevantes son los que se encuentran en el centro de la imagen,
-#     ya que los de los bordes en general valen 0 y no aportan información, esto 
-#     se puede apreciar en la imagen promedio. Creemos que se podria trabajar con
-#     menos atributos, ya que hay muchos y varios no aportan información, pero 
-#     para recrear la imagen consideramos que es más facil dejar los 784 pixeles.
-# 
-# =============================================================================
-
-del imagen, etiqueta, prenda, j, i, image_array, imagen_prom
+del etiqueta, i, image_array, imagen_prom
 #%%
 # b) ¿Hay clases de prendas que son parecidas entre sí? Por ejemplo, ¿Qué es 
 # más fácil de diferenciar: remeras de pantalones o remeras de pullovers?
@@ -278,10 +270,8 @@ plt.legend(labels=['promedio de todos los pantalones'])
 del data1, data2, etiqueta, i, image_array, imagen, j, k, num_fila, prenda, prom
 del prom_filas1, prom_filas2
 #%%
-from sklearn.model_selection import train_test_split
+# Sacamos los pixeles que en promedio son cercanos a 0
 
-# sacamos los pixeles que en promedio son cercanos a 0
-#limpieza
 fashion_mnist_limpio = fashion_mnist
 columnas_0 = []
 for i in range(1,fashion_mnist_promedios.shape[1]):
@@ -289,28 +279,81 @@ for i in range(1,fashion_mnist_promedios.shape[1]):
         columnas_0.append(f'pixel{i}')
         
 fashion_mnist_limpio = fashion_mnist_limpio.drop(columns = columnas_0)
+
+del columnas_0, i 
     
 #%%
 # Ejercicio 2 a)
 remeras_pantalones = fashion_mnist_limpio[fashion_mnist['label'] <= 1]
 
 # b)
-remeras_pantalones['label'].value_counts() # si esta balanceado
-
-# c)
-
-
-
-
-
+remeras_pantalones['label'].value_counts() # sí, esta balanceado
 
 X = remeras_pantalones.drop(columns = ['label'])
-y = remeras_pantalones['label']
+y = remeras_pantalones[['label']]
 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 
-y_train.value_counts()
+# c)
+# 3 con 3 atributos
+# 3 con 20
+# 1 con 6
+# 3 con 377
+# 3 con 183
+# 3 con 560
+
+# Capaz que elegimos muchos conjuntos de distintos atributos para comparar
+# Habría que consultar cuántos masomenos están bien
+
+
+# CORREGIR Y CALCULAR LOS PROMEDIOS CON EL DATAFRAME LIMPITO O SACARLE TODO LO QUE SEA MENOR A 1
+# 3 atributos
+# Media max remeras, media max pantalones, maxima diferencia promedio entre la media de dos pixeles
+pixel_max_remeras = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==0].idxmax(axis='columns')
+print(pixel_max_remeras)
+pixel_max_pantalones = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==1].idxmax(axis='columns')
+print(pixel_max_pantalones)
+max_dif = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0).idxmax(axis='columns')
+print(max_dif)
+
+max_medias= X_train[['pixel14', 'pixel42', 'pixel45']]
+
+# =============================================================================
+# Media minima de remeras, media minima de pantalones, minima diferencia promedio entre la media de dos pixeles
+pixel_min_remeras = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] == 0].drop(columns=['label']).idxmin(axis='columns')
+print(pixel_min_remeras)
+pixel_min_pantalones = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==1].idxmin(axis='columns')
+print(pixel_min_pantalones)
+min_dif = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0).idxmin(axis='columns')
+print(min_dif)
+
+max_medias= X_train[['pixel1', 'pixel', 'pixel743']]
+
+## PARA HACER ESTO DEBERÏAMOS LIMPIAR EL DATAFRAME DE PROMEDIOS Y DESCARTAR TODO AQUELLO QUE FUERA 0 O RECALCULAR CON EL LIMPITO
+
+
+# =============================================================================
+# Maxima diferencia y minima diferencia promedio, algo más...
+
+
+
+
+# 6 atributos
+
+# Cuartiles remeras y cuartiles pantalones
+
+# para mas de un atributo podemos hacer un slice en la distribución
+
+# Para el KNN vamos a trabajar primero
+
+# Búsqueda de la mejor cantidad de vecinos
+hyper_params = {'n_neighbors' : [4,5,6,7,8,9,10,11,12]}
+neigh = KNeighborsRegressor()
+clf = GridSearchCV(estimator=neigh, param_grid=hyper_params, cv = 5)
+search = clf.fit(X_train, y_train)
+search.best_params_
+search.best_score_
 
 # d)
 
@@ -319,11 +362,47 @@ y_train.value_counts()
 del X, y, X_train, X_test, y_train, y_test
 #%%
 # Ejercicio 3 a)
+# Dividimos en data train y data test 
 
 X = fashion_mnist_limpio.drop(columns = ['label'])
-y = fashion_mnist['label']
-
+y = fashion_mnist[['label']]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.20, random_state= 7, stratify= y)
+#%%
+# Armamos el modelo y evaluamos cuál conviene más
 
-y_train.value_counts()
+# Preguntas, cuántos k-folds nos convienen
+# Como podemos razonar el rango de altura en que se mueven los arboles
+# Con esto ya estaría
+hyper_params = {'criterion' :["gini", "entropy"], 'max_depth' : [4,5,6,7,8,9,10,11,12]}
+arbol = DecisionTreeClassifier()
+clf = GridSearchCV(estimator=arbol, param_grid=hyper_params, cv = 5)
+search = clf.fit(X_train, y_train)
+search.best_params_
+search.best_score_
+
+del arbol
+#%%
+
+arbol=DecisionTreeClassifier(criterion='mejor criterio', max_depth='mejor profundidad')
+arbol.predict(X_test, y_test)
+
+# Medir precisión y recall???
+del X, y, X_train, X_test, y_train, y_test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
