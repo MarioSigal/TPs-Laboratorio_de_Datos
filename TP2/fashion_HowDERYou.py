@@ -28,7 +28,7 @@ fashion_mnist.head()
 #%%
 # Definición de funciones
 
-# función que trasforma la fila de una prenda en específico, con sus 784 
+# Función que trasforma la fila de una prenda en específico, con sus 784 
 # pixeles, en una imagen. 0 <= num_fila < 60000
 def visualizar_prenda(num_fila):
     etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
@@ -46,8 +46,15 @@ def visualizar_prenda(num_fila):
   
     
 #%%
-
+# Mostramos como funciona la función
 visualizar_prenda(3)
+
+#%%
+# =============================================================================
+# =============================================================================
+# Análisis exploratorio
+# =============================================================================
+# =============================================================================
 
 #%%
 # Exploración del dataframe
@@ -55,7 +62,8 @@ fashion_mnist.info() # cantidad de filas, columnas y tipo de datos
 fashion_mnist['label'].unique() # cuántas son las labels
 fashion_mnist['label'].value_counts() # qué cantidad hay de cada categoría
 #%%
-# Imagen promedio de cada prenda
+# Imagen promedio de cada prenda junto a la construcción del data frame de los 
+# promedios de cada prenda
 fashion_mnist_promedios_prenda = pd.DataFrame()
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 for j in range(10):
@@ -71,7 +79,7 @@ for j in range(10):
     plt.axis('off')
     plt.show()
 
-del imagen, prenda, j, i, image_array
+del imagen, prenda, j, i, image_array, etiqueta
 #%%
 # Nuevo dataFrame con los valores promedio de todas las prendas juntas
 fashion_mnist_promedios = pd.DataFrame()
@@ -94,10 +102,9 @@ plt.show()
 
 del etiqueta, i, image_array, imagen_prom
 #%%
-# b) ¿Hay clases de prendas que son parecidas entre sí? Por ejemplo, ¿Qué es 
-# más fácil de diferenciar: remeras de pantalones o remeras de pullovers?
-
+# =============================================================================
 # Representación visual de la comparación entre dos prendas promedio, pantalones y zapatillas 
+# =============================================================================
 # Imagenes superpuestas
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias',
             'Camisa', 'Zapatillas', 'Cartera', 'Botas']
@@ -117,6 +124,9 @@ plt.axis('off')
 plt.title(f'{etiqueta[int(data[num_fila1][0])]} vs {etiqueta[int(data[num_fila2][0])]}')
 plt.show()
 
+del imagen1, imagen2
+#%%
+# Gráfico de valor de pixel promedio por fila
 # Calculo de promedio de filas, para poder visualizar 28 valores en vez de 784
 prom_filas1 = np.zeros(28)
 prom_filas2 = np.zeros(28)
@@ -132,12 +142,16 @@ for i in range(1,758,28):
 sns.scatterplot(x=np.arange(1,29), y=prom_filas1)
 sns.scatterplot(x=np.arange(1,29), y=prom_filas2).set(
                     title='Tonalidad promedio por fila de pantalones y zapatillas', 
-                    xlabel='fila de imagen', ylabel='promedio de fila de pixeles')
+                    xlabel='Fila de imagen', ylabel='Promedio de fila de pixeles')
 plt.xticks(np.arange(0,29,2))
-plt.legend(labels=['pantalones', 'zapatillas'], title='prenda')
+plt.legend(labels=['Pantalones', 'Zapatillas'], title='Prenda')
 
-
+del prom_filas1, prom_filas2, j, i, prom1, prom2
+del pixeles1, pixeles2, num_fila1, num_fila2
+#%%
+# =============================================================================
 # Representación visual de la comparación entre suéter y camisa
+# =============================================================================
 # Imagenes superpuestas
 num_fila1 = 2 #suéter
 num_fila2 = 6 #camisa
@@ -152,7 +166,9 @@ plt.imshow(imagen2, cmap='Blues', alpha=0.5)
 plt.axis('off')
 plt.title(f'{etiqueta[int(data[num_fila1][0])]} vs {etiqueta[int(data[num_fila2][0])]}')
 plt.show()
-
+del imagen1, imagen2
+#%%
+# Gráfico de valor de pixel promedio por fila
 # Calculo de promedio de filas, para poder visualizar 28 valores en vez de 784
 prom_filas1 = np.zeros(28)
 prom_filas2 = np.zeros(28)
@@ -168,26 +184,16 @@ for i in range(1,758,28):
 sns.scatterplot(x=np.arange(1,29), y=prom_filas1)
 sns.scatterplot(x=np.arange(1,29), y=prom_filas2).set(
                     title='Tonalidad promedio por fila de suéter y camisa', 
-                    xlabel='fila de imagen', ylabel='promedio de fila de pixeles')
+                    xlabel='Fila de imagen', ylabel='Promedio de fila de pixeles')
 plt.xticks(np.arange(0,29,2))
-plt.legend(labels=['suéter', 'camisa'], title='prenda')
+plt.legend(labels=['Suéter', 'Camisa'], title='Prenda')
 
-# =============================================================================
-# Conclusión:
-#     con la visualización por imagen de la comparación de dos prendas promedio, 
-#     se puede apreciar las diferencias entre las catégorias. Entre el pantalón y 
-#     las zapatillas se puede ver que en la parte superior e inferior de la figura 
-#     de los pantalones, estos se ven solos, y solo en el medio se superponen las 
-#     dos figuras. Lo mismo con los costados de la zapatilla. Por esto, estas dos 
-#     prendas son fáciles de diferenciar. Pero si se compara suéter y camisa, casi 
-#     que no hay diferencias.
-# =============================================================================
-
-del num_fila1, num_fila2, data, imagen1, imagen2, pixeles1, pixeles2, etiqueta
+del num_fila1, num_fila2, data, pixeles1, pixeles2, etiqueta
 del i, j, prom1, prom2, prom_filas1, prom_filas2
 #%%
-# c) Tomen una de las clases, por ejemplo vestidos, ¿Son todos muy similares entre sí?
-
+# =============================================================================
+# Comparación entre prendas de una misma clase
+# =============================================================================
 # Imagenes de desvio estandar de todas las prendas
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias',
             'Camisa', 'Zapatillas', 'Cartera', 'Botas']
@@ -202,8 +208,12 @@ for j in range(10):
     plt.imshow(image_array, cmap='plasma')  
     plt.axis('off')
     plt.show()
-    
+del j, i, etiqueta,prenda,image_array, imagen
+#%%
+# =============================================================================
 # Visualizacion del desvio de sandialias
+# =============================================================================
+
 # Comparación del promedio de las filas del promedio general, con el promedio 
 # de las filas de 10 sandalias al azar
 data1 = fashion_mnist_promedios_prenda.values
@@ -228,15 +238,17 @@ for k in range(10):
 
 sns.scatterplot(x=np.arange(1,29), y=prom_filas1).set(
                         title='Tonalidad promedio por fila de 10 sandalias contra el promedio', 
-                        xlabel='fila de imagen', ylabel='promedio de pixel')
+                        xlabel='Fila de imagen', ylabel='Promedio de pixel')
 for i in range(10):
     sns.scatterplot(x=np.arange(1,29), y=prom_filas2[i,:], marker='x')
 
 plt.xticks(np.arange(0,29,2))
-plt.legend(labels=['promedio de todas las sandalias'])
-
-
+plt.legend(labels=['Promedio de todas las sandalias'])
+del i, j, data1, data2, k, num_fila, prom, prom_filas1, prom_filas2
+#%%
+# =============================================================================
 # Visualizacion del desvio de pantalones
+# =============================================================================
 # Comparación del promedio de las filas del promedio general, con el promedio 
 # de las filas de 10 pantalones al azar
 data1 = fashion_mnist_promedios_prenda.values
@@ -269,21 +281,25 @@ plt.xticks(np.arange(0,29,2))
 plt.legend(labels=['promedio de todos los pantalones'])
 
 
-del data1, data2, etiqueta, i, image_array, imagen, j, k, num_fila, prenda, prom
-del prom_filas1, prom_filas2
+del data1, data2, i, j, k, num_fila,  prom, prom_filas1, prom_filas2
 #%%
-# Ejercicio 2 a)
-
+# =============================================================================
+# =============================================================================
+# kNN
+# =============================================================================
+# =============================================================================
+#%%
+# Nos quedamos con la porción del data set a utilizar y nos fijamos si está balanceado
 remeras_pantalones = fashion_mnist[fashion_mnist['label'] <= 1]    
-# b)
-remeras_pantalones['label'].value_counts() # sí, esta balanceado
+remeras_pantalones['label'].value_counts() # Sí, esta balanceado
 
+#%%
+# Dividimos en datatest y datatrain manteniendo la distribución de las clases
 X = remeras_pantalones.drop(columns = ['label'])
 y = remeras_pantalones[['label']]
 
-
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
-
+#%%
 # c)
 # con 3 atributos
 # 5 con 74
@@ -482,15 +498,28 @@ arbol_final.fit(X_train, y_train)
 
 #%%
 # Vamos a evaluar nuestro arbol. Para eso vamos a medir la accuracy, la precision y el recall
-arbol_final.score(X_test, y_test)
 
- from sklearn.metrics import accuracy_score
-# Accuracy
-accuracy=accuracy_score(arbol_final.predict(X_test), y_test)
- 
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import f1_score
+
+
+y_pred = arbol_final.predict(X_test)
+# Score
+arbol_final.score(X_test, y_test)
+accuracy_score(y_test, y_pred)
+# Accuracy
  
-precision = average_precision_score(y_test, arbol_final.predict(X_test))
+# Precision
+precision_score(y_test,y_pred, average='micro')
+
+recall_score(y_test, y_pred , average='micro')
+
+f1_score(y_test, y_pred, average='micro')
+
 # Medir precisión y recall???
+
 del X, y, X_train, X_test, y_train, y_test
+del arbol_final
