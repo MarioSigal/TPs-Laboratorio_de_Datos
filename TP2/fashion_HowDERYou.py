@@ -427,32 +427,60 @@ plt.scatter([7,74,185,371,557], scores)
 # e)
 
 del X, y, X_train, X_test, y_train, y_test
-#%%
-# Ejercicio 3 a)
-# Dividimos en data train y data test 
 
+#%%
+# =============================================================================
+# =============================================================================
+# Árbol de decisión
+# =============================================================================
+# =============================================================================
+#%%
+# Dividimos en data train y data test  
+ 
 X = fashion_mnist_limpio.drop(columns = ['label'])
 y = fashion_mnist[['label']]
-
+ 
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 #%%
-# Armamos el modelo y evaluamos cuál conviene más
+# Primero armamos un arbol de altura infinita para ver la maxima profundidad del arbol
 
-# Preguntas, cuántos k-folds nos convienen
-# Como podemos razonar el rango de altura en que se mueven los arboles
-# Con esto ya estaría
-hyper_params = {'criterion' :["gini", "entropy"], 'max_depth' : [4,5,6,7,8,9,10,11,12]}
-arbol = DecisionTreeClassifier()
-clf = GridSearchCV(estimator=arbol, param_grid=hyper_params, cv = 5)
+arbol_altura_inf=DecisionTreeClassifier()
+arbol_altura_inf.fit(X_train, y_train)
+arbol_altura_inf.get_depth()
+
+del arbol_altura_inf
+
+#%%
+# Ahora que sabemos que la maxima profundidad es 51, probamos evaluando valores de altura posibles
+# entre 4 y 51, criterios gini y entropy y dada la gran gran cantidad de datos vamos a usar solo 5 folds
+
+profundidad =np.arange(4,51)
+hyper_params = {'criterion' :["gini", "entropy"], 'max_depth' : profundidad}
+mejor_arbol = DecisionTreeClassifier()
+clf = GridSearchCV(estimator=mejor_arbol, param_grid=hyper_params, cv = 5)
 search = clf.fit(X_train, y_train)
 search.best_params_
 search.best_score_
+ 
+del mejor_arbol, profundidad, hyper_params, clf, search
 
-del arbol
 #%%
+# Ahora que conocemos los mejores parametros vamos a armar el mejor arbol
 
-arbol=DecisionTreeClassifier(criterion='mejor criterio', max_depth='mejor profundidad')
-arbol.predict(X_test, y_test)
+arbol_final=DecisionTreeClassifier(criterion='entropy', max_depth=12)
+arbol_final.fit(X_train, y_train)
 
+#%%
+# Vamos a evaluar nuestro arbol. Para eso vamos a medir la accuracy, la precision y el recall
+arbol_final.score(X_test, y_test)
+
+ from sklearn.metrics import accuracy_score
+# Accuracy
+accuracy=accuracy_score(arbol_final.predict(X_test), y_test)
+ 
+from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
+ 
+precision = average_precision_score(y_test, arbol_final.predict(X_test))
 # Medir precisión y recall???
 del X, y, X_train, X_test, y_train, y_test
