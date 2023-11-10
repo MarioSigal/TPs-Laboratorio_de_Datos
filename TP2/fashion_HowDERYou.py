@@ -272,19 +272,6 @@ plt.legend(labels=['promedio de todos los pantalones'])
 del data1, data2, etiqueta, i, image_array, imagen, j, k, num_fila, prenda, prom
 del prom_filas1, prom_filas2
 #%%
-# Sacamos los pixeles que en promedio son cercanos a 0
-
-fashion_mnist_limpio = fashion_mnist
-columnas_0 = []
-for i in range(1,fashion_mnist_promedios.shape[1]):
-    if fashion_mnist_promedios.at[0, f'pixel{i}'] < 1:
-        columnas_0.append(f'pixel{i}')
-        
-fashion_mnist_limpio = fashion_mnist_limpio.drop(columns = columnas_0)
-
-del columnas_0, i 
-
-#%%
 # Ejercicio 2 a)
 
 remeras_pantalones = fashion_mnist[fashion_mnist['label'] <= 1]    
@@ -298,7 +285,7 @@ y = remeras_pantalones[['label']]
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 
 # c)
-#  con 3 atributos
+# con 3 atributos
 # 5 con 74
 # 10 con 7
 # 10 con 371
@@ -384,8 +371,6 @@ for i in range(7):
     resultados.append(search.best_params_)
     resultados.append(search.best_score_)
 
-
-# graficar
 print(resultados)
 
 X_trains_armados = ['max_medias', 'max_diferencias', 'espacio_pantalones', 'mangas_remera', 'primeros_pixeles', 'ultimos_pixeles', 'pixeles_random']
@@ -424,34 +409,38 @@ plt.ylabel('Score')
 plt.title('Presición de KNN por cantidad de atributos')
 #%%
 # d)
-atributos_prueba = []
-for cant_atributos in range(1,785):
-    diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
-    diferencias = diferencias.drop(columns = 'label')
-    diferencias = diferencias[diferencias['pixel1'] < 0] # me quedo con la fila de numeros
-    diferencias = diferencias.abs()
-    atributos = []
-    for _ in range(cant_atributos):
-        atributo = diferencias.idxmax(axis='columns')[1]
-        diferencias = diferencias.drop(columns = atributo)
-        atributos.append(atributo)
-    atributos_prueba.append(atributos)
+pixeles1 = np.arange(1,785)
+random.shuffle(pixeles1)
+atributos_prueba1 = []
+for cant_atributos in range(5,785,10):
+    atributos1 = []
+    for i in range(cant_atributos):
+        atributo1 = f'pixel{pixeles[i]}'
+        atributos1.append(atributo1)
+    atributos_prueba1.append(atributos1)
+    random.shuffle(pixeles1)
 
 
+scores1 = pd.DataFrame(columns= ['cant_atributos', 'k', 'score'])
+j = 0
+cant = 5
+for i in range(78):
+    data_random1 = X_train[atributos_prueba1[i]]
+    test1 = X_test[atributos_prueba1[i]]
+    for k in range(1,10):
+        scores1.at[j,'cant_atributos'] = cant
+        scores1.at[j,'k'] = k
+        kneigh1 = KNeighborsRegressor(n_neighbors=k)
+        kneigh1.fit(data_random1, y_train)
+        scores1.at[j,'score'] = kneigh1.score(test1, y_test)
+        j += 1
+    cant += 10
             
-   
-scores = []
-for i in range(1,785):
-    max_diferencias = X_train[atributos_prueba[i]]
-    test = X_test[atributos_prueba[i]]
-    for k in range(50):
-        kneigh = KNeighborsRegressor(n_neighbors=k)
-        kneigh.fit(max_diferencias, y_train)
-        scores.append(kneigh.score(test, y_test))
-            
+sns.scatterplot(x=scores1['cant_atributos'], y=scores1['score'], hue=scores1['k'], palette='Set2')
+plt.xticks(np.arange(5,785,50))
+plt.title('Presición de KNN por cantidad de atributos y k')
 
 del X, y, X_train, X_test, y_train, y_test
-
 #%%
 # =============================================================================
 # =============================================================================
@@ -460,10 +449,7 @@ del X, y, X_train, X_test, y_train, y_test
 # =============================================================================
 #%%
 # Dividimos en data train y data test  
- 
-X = fashion_mnist_limpio.drop(columns = ['label'])
-y = fashion_mnist[['label']]
- 
+
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 #%%
 # Primero armamos un arbol de altura infinita para ver la maxima profundidad del arbol
