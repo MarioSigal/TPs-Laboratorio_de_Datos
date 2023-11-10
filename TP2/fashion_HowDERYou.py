@@ -18,7 +18,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 import random
 from sklearn.metrics import accuracy_score
-#from sklearn.metrics import average_precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
