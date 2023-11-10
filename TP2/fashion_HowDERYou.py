@@ -3,30 +3,32 @@
 """
 Grupo: "How DER You?"
 Integrantes: Mario Sigal Aguirre, Augusto Guarnaccio, Azul Barracchia
-Contenido...
+Evaluación de modelos de clasificación sobre el dataset Fashion MNIST
 """
 
-#%%
-# Importación de bibliotecas
+#%% Importación de bibliotecas
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sklearn 
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 import random
-#%%
-# Importación de datos
+from sklearn.metrics import accuracy_score
+#from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import f1_score
+
+#%% Importación de datos
 
 fashion_mnist = pd.read_csv('./fashion-mnist.csv')
 fashion_mnist.head()
 
-#%%
-# Definición de funciones
+#%% Definición de funciones
 
 # Función que trasforma la fila de una prenda en específico, con sus 784 
 # pixeles, en una imagen. 0 <= num_fila < 60000
@@ -43,27 +45,23 @@ def visualizar_prenda(num_fila):
     plt.title(etiqueta[data[num_fila][0]])
     plt.axis('off')
     plt.show()
-  
     
-#%%
-# Mostramos como funciona la función
-visualizar_prenda(3)
+#%% Testeo de la función
 
-#%%
-# =============================================================================
+visualizar_prenda(3)
+#%% ===========================================================================
 # =============================================================================
 # Análisis exploratorio
 # =============================================================================
 # =============================================================================
+#%% Exploración del dataframe
 
-#%%
-# Exploración del dataframe
 fashion_mnist.info() # cantidad de filas, columnas y tipo de datos
 fashion_mnist['label'].unique() # cuántas son las labels
 fashion_mnist['label'].value_counts() # qué cantidad hay de cada categoría
-#%%
-# Imagen promedio de cada prenda junto a la construcción del data frame de los 
+#%% Imagen promedio de cada prenda junto a la construcción del data frame de los 
 # promedios de cada prenda
+
 fashion_mnist_promedios_prenda = pd.DataFrame()
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 for j in range(10):
@@ -80,16 +78,16 @@ for j in range(10):
     plt.show()
 
 del imagen, prenda, j, i, image_array, etiqueta
-#%%
-# Nuevo dataFrame con los valores promedio de todas las prendas juntas
+#%% Nuevo dataFrame con los valores promedio de todas las prendas juntas
+
 fashion_mnist_promedios = pd.DataFrame()
 fashion_mnist_promedios['label'] = [10] 
 for i in range(1,785):
     fashion_mnist_promedios[f'pixel{i}'] = [fashion_mnist[f'pixel{i}'].mean()]
 
 del i 
-#%%
-# Imagen de los valores promedios de todas las prendas juntas
+#%% Imagen de los valores promedios de todas las prendas juntas
+
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias', 'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 imagen_prom = np.zeros(784)
 for i in range(1, 785):
@@ -101,11 +99,12 @@ plt.axis('off')
 plt.show()
 
 del etiqueta, i, image_array, imagen_prom
-#%%
+#%% ===========================================================================
+# Representación visual de la comparación entre dos prendas promedio, 
+# pantalones y zapatillas 
 # =============================================================================
-# Representación visual de la comparación entre dos prendas promedio, pantalones y zapatillas 
-# =============================================================================
-# Imagenes superpuestas
+#%% Imagenes superpuestas
+
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias',
             'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 
@@ -125,8 +124,8 @@ plt.title(f'{etiqueta[int(data[num_fila1][0])]} vs {etiqueta[int(data[num_fila2]
 plt.show()
 
 del imagen1, imagen2
-#%%
-# Gráfico de valor de pixel promedio por fila
+#%% Gráfico de valor de pixel promedio por fila
+
 # Calculo de promedio de filas, para poder visualizar 28 valores en vez de 784
 prom_filas1 = np.zeros(28)
 prom_filas2 = np.zeros(28)
@@ -148,11 +147,11 @@ plt.legend(labels=['Pantalones', 'Zapatillas'], title='Prenda')
 
 del prom_filas1, prom_filas2, j, i, prom1, prom2
 del pixeles1, pixeles2, num_fila1, num_fila2
-#%%
-# =============================================================================
+#%% ===========================================================================
 # Representación visual de la comparación entre suéter y camisa
 # =============================================================================
-# Imagenes superpuestas
+#%% Imagenes superpuestas
+
 num_fila1 = 2 #suéter
 num_fila2 = 6 #camisa
 
@@ -166,9 +165,10 @@ plt.imshow(imagen2, cmap='Blues', alpha=0.5)
 plt.axis('off')
 plt.title(f'{etiqueta[int(data[num_fila1][0])]} vs {etiqueta[int(data[num_fila2][0])]}')
 plt.show()
+
 del imagen1, imagen2
-#%%
-# Gráfico de valor de pixel promedio por fila
+#%% Gráfico de valor de pixel promedio por fila
+
 # Calculo de promedio de filas, para poder visualizar 28 valores en vez de 784
 prom_filas1 = np.zeros(28)
 prom_filas2 = np.zeros(28)
@@ -190,11 +190,11 @@ plt.legend(labels=['Suéter', 'Camisa'], title='Prenda')
 
 del num_fila1, num_fila2, data, pixeles1, pixeles2, etiqueta
 del i, j, prom1, prom2, prom_filas1, prom_filas2
-#%%
-# =============================================================================
+#%% ===========================================================================
 # Comparación entre prendas de una misma clase
 # =============================================================================
-# Imagenes de desvio estandar de todas las prendas
+#%% Imagenes de desvio estandar de todas las prendas
+
 etiqueta = ['Remera/top', 'Pantalones', 'Suéter', 'Vestido', 'Abrigo', 'Sandalias',
             'Camisa', 'Zapatillas', 'Cartera', 'Botas']
 
@@ -208,14 +208,14 @@ for j in range(10):
     plt.imshow(image_array, cmap='plasma')  
     plt.axis('off')
     plt.show()
+    
 del j, i, etiqueta,prenda,image_array, imagen
-#%%
-# =============================================================================
+#%% =============================================================================
 # Visualizacion del desvio de sandialias
 # =============================================================================
-
-# Comparación del promedio de las filas del promedio general, con el promedio 
+#%% Comparación del promedio de las filas del promedio general, con el promedio 
 # de las filas de 10 sandalias al azar
+
 data1 = fashion_mnist_promedios_prenda.values
 num_fila = 5 # sandalias
 prom_filas1 = np.zeros(28)
@@ -244,13 +244,14 @@ for i in range(10):
 
 plt.xticks(np.arange(0,29,2))
 plt.legend(labels=['Promedio de todas las sandalias'])
+
 del i, j, data1, data2, k, num_fila, prom, prom_filas1, prom_filas2
-#%%
-# =============================================================================
+#%% ===========================================================================
 # Visualizacion del desvio de pantalones
 # =============================================================================
-# Comparación del promedio de las filas del promedio general, con el promedio 
+#%% Comparación del promedio de las filas del promedio general, con el promedio 
 # de las filas de 10 pantalones al azar
+
 data1 = fashion_mnist_promedios_prenda.values
 num_fila = 1 # pantalones
 prom_filas1 = np.zeros(28)
@@ -280,40 +281,23 @@ for i in range(10):
 plt.xticks(np.arange(0,29,2))
 plt.legend(labels=['promedio de todos los pantalones'])
 
-
 del data1, data2, i, j, k, num_fila,  prom, prom_filas1, prom_filas2
-#%%
-# =============================================================================
+#%% ===========================================================================
 # =============================================================================
 # kNN
 # =============================================================================
 # =============================================================================
-#%%
-# Nos quedamos con la porción del data set a utilizar y nos fijamos si está balanceado
+#%% Nos quedamos con la porción del data set a utilizar y nos fijamos si está balanceado
+
 remeras_pantalones = fashion_mnist[fashion_mnist['label'] <= 1]    
 remeras_pantalones['label'].value_counts() # Sí, esta balanceado
-
-#%%
-# Dividimos en datatest y datatrain manteniendo la distribución de las clases
+#%% Dividimos en datatest y datatrain manteniendo la distribución de las clases
 X = remeras_pantalones.drop(columns = ['label'])
 y = remeras_pantalones[['label']]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
-#%%
-# c)
-# con 3 atributos
-# 5 con 74
-# 10 con 7
-# 10 con 371
-# 10 con 185
-# 10 con 557
+#%% Agarramos 3 atributos con diferentes criterios
 
-
-    
-
-
-# CORREGIR Y CALCULAR LOS PROMEDIOS CON EL DATAFRAME LIMPITO O SACARLE TODO LO QUE SEA MENOR A 1
-# 3 atributos
 # Media max remeras, media max pantalones, maxima diferencia promedio entre la media de dos pixeles
 pixel_max_remeras = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==0].idxmax(axis='columns')
 pixel_max_pantalones = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==1].idxmax(axis='columns')
@@ -324,13 +308,11 @@ diferencias = diferencias.abs()
 max_dif = diferencias.idxmax(axis='columns')[1]
 pixel_max_remeras = pixel_max_remeras[0]
 pixel_max_pantalones = pixel_max_pantalones[1]
-print(max_dif)
 
 max_medias= X_train[[pixel_max_remeras, pixel_max_pantalones, max_dif]]
 
 # =============================================================================
 # Maxima diferencia y minima diferencia promedio, algo más...
-
 
 diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
 diferencias = diferencias.drop(columns = 'label')
@@ -344,60 +326,65 @@ atributo3 = diferencias.idxmax(axis='columns')[1]
 
 max_diferencias = X_train[[atributo1, atributo2, atributo3]]
 
-
-# espacio entre pantalones
+# =============================================================================
+# Espacio entre pantalones
 
 atributo1 = 'pixel406'
-atriibuto2 = 'pixel547'
+atributo2 = 'pixel547'
 atributo3 = 'pixel742'
 
 espacio_pantalones = X_train[[atributo1, atributo2, atributo3]]
 
-
-
-# mangas remera
+# =============================================================================
+# Mangas de remera
 
 atributo1 = 'pixel231'
-atriibuto2 = 'pixel247'
+atributo2 = 'pixel247'
 atributo3 = 'pixel92'
-atributo4 = 'pixel105'
 
-mangas_remera = X_train[[atributo1, atributo2, atributo3, atributo4]]
+mangas_remera = X_train[[atributo1, atributo2, atributo3]]
 
-# primeros
+# =============================================================================
+# Primeros pixeles
 
 primeros_pixeles = X_train[['pixel1', 'pixel2', 'pixel3']]
-# ultimos
+
+# =============================================================================
+# Últimos pixeles
 
 ultimos_pixeles = X_train[['pixel784', 'pixel783', 'pixel782']]
-# random
+
+# =============================================================================
+# Pixeles random
+
 random.seed(0)
 numeros_random = [random.randint(1, 785) for _ in range(3)]
 
-
 pixeles_random = X_train[[f'pixel{numeros_random[0]}', f'pixel{numeros_random[1]}', f'pixel{numeros_random[2]}']]
+
+# =============================================================================
 # KNNs
 X_trains_armados = [max_medias, max_diferencias, espacio_pantalones, mangas_remera, primeros_pixeles, ultimos_pixeles, pixeles_random]
 resultados = []
 for i in range(7):
     hyper_params = {'n_neighbors' : [10,11,12,13,14,15,16,17,18,19,20]}
-    neigh = KNeighborsRegressor()
-    clf = GridSearchCV(estimator=neigh, param_grid=hyper_params, cv = 5)
+    kneigh = KNeighborsRegressor()
+    clf = GridSearchCV(estimator=kneigh, param_grid=hyper_params, cv = 5)
     search = clf.fit(X_trains_armados[i], y_train)
     resultados.append(search.best_params_)
     resultados.append(search.best_score_)
 
-print(resultados)
-
+# Armamos una tabla con los resultados del GridSearch
 X_trains_armados = ['max_medias', 'max_diferencias', 'espacio_pantalones', 'mangas_remera', 'primeros_pixeles', 'ultimos_pixeles', 'pixeles_random']
 resultado = pd.DataFrame(columns=['nombre_subconjunto', 'mejor_k', 'mejor_score'])
 for i in range(7):
     resultado.at[i, 'nombre_subconjunto'] = str(X_trains_armados[i])
     resultado.at[i, 'mejor_k'] = resultados[2*i]['n_neighbors']
     resultado.at[i, 'mejor_score'] = resultados[2*i+1]
-print(resultado)
 
-# probamos para distinta cantidad de atributos
+# =============================================================================
+# Probamos para distinta cantidad de atributos según el criterio de diferencia máxima
+
 atributos_prueba = []
 for cant_atributos in [7,74,185,371,557]:
     diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
@@ -418,66 +405,73 @@ for i in range(5):
     kneigh = KNeighborsRegressor(n_neighbors=18)
     kneigh.fit(max_diferencias, y_train)
     scores.append(kneigh.score(test, y_test))
-    
+
+# Grafico de los scores
 plt.scatter([7,74,185,371,557], scores)
 plt.xlabel('Cantidad de atributos utilizados')
 plt.ylabel('Score')
 plt.title('Presición de KNN por cantidad de atributos')
-#%%
-# d)
-pixeles1 = np.arange(1,785)
-random.shuffle(pixeles1)
-atributos_prueba1 = []
+
+del atributo1, atributo2, atributo3, atributos, atributo, atributos_prueba
+del cant_atributos, clf, diferencias, espacio_pantalones, hyper_params, i, kneigh
+del mangas_remera, max_dif, max_diferencias, max_medias, numeros_random,
+del pixel_max_pantalones, pixel_max_remeras, pixeles_random, primeros_pixeles
+del resultado, resultados, scores, search, test, ultimos_pixeles, X_trains_armados
+#%% Probamos el método de KNN para distintas cantidades de atributos y distintas ks
+
+pixeles = np.arange(1,785)
+random.shuffle(pixeles)
+atributos_prueba = []
 for cant_atributos in range(5,785,10):
-    atributos1 = []
+    atributos = []
     for i in range(cant_atributos):
-        atributo1 = f'pixel{pixeles[i]}'
-        atributos1.append(atributo1)
-    atributos_prueba1.append(atributos1)
-    random.shuffle(pixeles1)
+        atributo = f'pixel{pixeles[i]}'
+        atributos.append(atributo)
+    atributos_prueba.append(atributos)
+    random.shuffle(pixeles)
 
-
-scores1 = pd.DataFrame(columns= ['cant_atributos', 'k', 'score'])
+scores = pd.DataFrame(columns= ['cant_atributos', 'k', 'score'])
 j = 0
 cant = 5
 for i in range(78):
-    data_random1 = X_train[atributos_prueba1[i]]
-    test1 = X_test[atributos_prueba1[i]]
+    data_random = X_train[atributos_prueba[i]]
+    test = X_test[atributos_prueba[i]]
     for k in range(1,10):
-        scores1.at[j,'cant_atributos'] = cant
-        scores1.at[j,'k'] = k
-        kneigh1 = KNeighborsRegressor(n_neighbors=k)
-        kneigh1.fit(data_random1, y_train)
-        scores1.at[j,'score'] = kneigh1.score(test1, y_test)
+        scores.at[j,'cant_atributos'] = cant
+        scores.at[j,'k'] = k
+        kneigh = KNeighborsRegressor(n_neighbors=k)
+        kneigh.fit(data_random, y_train)
+        scores.at[j,'score'] = kneigh.score(test, y_test)
         j += 1
     cant += 10
             
-sns.scatterplot(x=scores1['cant_atributos'], y=scores1['score'], hue=scores1['k'], palette='Set2')
+# Grafico de los scores
+sns.scatterplot(x=scores['cant_atributos'], y=scores['score'], hue=scores['k'], palette='Set2')
 plt.xticks(np.arange(5,785,50))
 plt.title('Presición de KNN por cantidad de atributos y k')
 
-del X, y, X_train, X_test, y_train, y_test
+del X, y, X_train, X_test, y_train, y_test, remeras_pantalones, atributo, i, j, k, test
+del atributos, atributos_prueba, cant, cant_atributos, data_random, kneigh, pixeles, scores
 #%%
 # =============================================================================
 # =============================================================================
 # Árbol de decisión
 # =============================================================================
 # =============================================================================
-#%%
-# Dividimos en data train y data test  
+#%% Dividimos en data train y data test  
 
-X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
-#%%
-# Primero armamos un arbol de altura infinita para ver la maxima profundidad del arbol
+X = fashion_mnist.drop(columns = ['label'])
+y = fashion_mnist[['label']]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.15, random_state= 7, stratify= y)
+#%% Primero armamos un arbol de altura infinita para ver la maxima profundidad del arbol
 
 arbol_altura_inf=DecisionTreeClassifier()
 arbol_altura_inf.fit(X_train, y_train)
-arbol_altura_inf.get_depth()
+print(arbol_altura_inf.get_depth())
 
 del arbol_altura_inf
-
-#%%
-# Ahora que sabemos que la maxima profundidad es 51, probamos evaluando valores de altura posibles
+#%% Ahora que sabemos que la maxima profundidad es 51, probamos evaluando valores de altura posibles
 # entre 4 y 51, criterios gini y entropy y dada la gran gran cantidad de datos vamos a usar solo 5 folds
 
 profundidad =np.arange(4,51)
@@ -485,41 +479,33 @@ hyper_params = {'criterion' :["gini", "entropy"], 'max_depth' : profundidad}
 mejor_arbol = DecisionTreeClassifier()
 clf = GridSearchCV(estimator=mejor_arbol, param_grid=hyper_params, cv = 5)
 search = clf.fit(X_train, y_train)
-search.best_params_
-search.best_score_
+print(search.best_params_)
+print(search.best_score_)
  
 del mejor_arbol, profundidad, hyper_params, clf, search
-
-#%%
-# Ahora que conocemos los mejores parametros vamos a armar el mejor arbol
+#%% Ahora que conocemos los mejores parametros vamos a armar el mejor arbol
 
 arbol_final=DecisionTreeClassifier(criterion='entropy', max_depth=12)
 arbol_final.fit(X_train, y_train)
-
-#%%
-# Vamos a evaluar nuestro arbol. Para eso vamos a medir la accuracy, la precision y el recall
-
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import f1_score
-
+#%% Vamos a evaluar nuestro arbol. Para eso vamos a medir la accuracy, la precision y el recall
 
 y_pred = arbol_final.predict(X_test)
+
 # Score
-arbol_final.score(X_test, y_test)
-accuracy_score(y_test, y_pred)
+print(arbol_final.score(X_test, y_test))
+print(accuracy_score(y_test, y_pred))
+
 # Accuracy
  
 # Precision
-precision_score(y_test,y_pred, average='micro')
+print(precision_score(y_test,y_pred, average='micro'))
 
-recall_score(y_test, y_pred , average='micro')
+print(recall_score(y_test, y_pred , average='micro'))
 
-f1_score(y_test, y_pred, average='micro')
+print(f1_score(y_test, y_pred, average='micro'))
 
 # Medir precisión y recall???
 
-del X, y, X_train, X_test, y_train, y_test
-del arbol_final
+del X, y, X_train, X_test, y_train, y_test, y_pred, arbol_final
+#%%
+del fashion_mnist, fashion_mnist_promedios, fashion_mnist_promedios_prenda
