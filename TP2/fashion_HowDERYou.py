@@ -18,6 +18,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
+import random
 #%%
 # Importación de datos
 
@@ -45,7 +46,8 @@ def visualizar_prenda(num_fila):
   
     
 #%%
-visualizar_prenda(425)
+
+visualizar_prenda(3)
 
 #%%
 # Exploración del dataframe
@@ -281,11 +283,11 @@ for i in range(1,fashion_mnist_promedios.shape[1]):
 fashion_mnist_limpio = fashion_mnist_limpio.drop(columns = columnas_0)
 
 del columnas_0, i 
-    
+
 #%%
 # Ejercicio 2 a)
-remeras_pantalones = fashion_mnist_limpio[fashion_mnist['label'] <= 1]
 
+remeras_pantalones = fashion_mnist[fashion_mnist['label'] <= 1]    
 # b)
 remeras_pantalones['label'].value_counts() # sí, esta balanceado
 
@@ -296,64 +298,129 @@ y = remeras_pantalones[['label']]
 X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 
 # c)
-# 3 con 3 atributos
-# 3 con 20
-# 1 con 6
-# 3 con 377
-# 3 con 183
-# 3 con 560
+#  con 3 atributos
+# 5 con 74
+# 10 con 7
+# 10 con 371
+# 10 con 185
+# 10 con 557
 
-# Capaz que elegimos muchos conjuntos de distintos atributos para comparar
-# Habría que consultar cuántos masomenos están bien
+
+    
 
 
 # CORREGIR Y CALCULAR LOS PROMEDIOS CON EL DATAFRAME LIMPITO O SACARLE TODO LO QUE SEA MENOR A 1
 # 3 atributos
 # Media max remeras, media max pantalones, maxima diferencia promedio entre la media de dos pixeles
 pixel_max_remeras = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==0].idxmax(axis='columns')
-print(pixel_max_remeras)
 pixel_max_pantalones = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==1].idxmax(axis='columns')
-print(pixel_max_pantalones)
-max_dif = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0).idxmax(axis='columns')
+diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
+diferencias = diferencias.drop(columns = 'label')
+diferencias = diferencias[diferencias['pixel1'] < 0] # me quedo con la fila de numeros
+diferencias = diferencias.abs()
+max_dif = diferencias.idxmax(axis='columns')[1]
+pixel_max_remeras = pixel_max_remeras[0]
+pixel_max_pantalones = pixel_max_pantalones[1]
 print(max_dif)
 
-max_medias= X_train[['pixel14', 'pixel42', 'pixel45']]
-
-# =============================================================================
-# Media minima de remeras, media minima de pantalones, minima diferencia promedio entre la media de dos pixeles
-pixel_min_remeras = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] == 0].drop(columns=['label']).idxmin(axis='columns')
-print(pixel_min_remeras)
-pixel_min_pantalones = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label']==1].idxmin(axis='columns')
-print(pixel_min_pantalones)
-min_dif = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0).idxmin(axis='columns')
-print(min_dif)
-
-max_medias= X_train[['pixel1', 'pixel', 'pixel743']]
-
-## PARA HACER ESTO DEBERÏAMOS LIMPIAR EL DATAFRAME DE PROMEDIOS Y DESCARTAR TODO AQUELLO QUE FUERA 0 O RECALCULAR CON EL LIMPITO
-
+max_medias= X_train[[pixel_max_remeras, pixel_max_pantalones, max_dif]]
 
 # =============================================================================
 # Maxima diferencia y minima diferencia promedio, algo más...
 
 
+diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
+diferencias = diferencias.drop(columns = 'label')
+diferencias = diferencias[diferencias['pixel1'] < 0] # me quedo con la fila de numeros
+diferencias = diferencias.abs()
+atributo1 = diferencias.idxmax(axis='columns')[1]
+diferencias = diferencias.drop(columns = atributo1)
+atributo2 = diferencias.idxmax(axis='columns')[1]
+diferencias = diferencias.drop(columns = atributo2)
+atributo3 = diferencias.idxmax(axis='columns')[1]
+
+max_diferencias = X_train[[atributo1, atributo2, atributo3]]
 
 
-# 6 atributos
+# espacio entre pantalones
 
-# Cuartiles remeras y cuartiles pantalones
+atributo1 = 'pixel406'
+atriibuto2 = 'pixel547'
+atributo3 = 'pixel742'
 
-# para mas de un atributo podemos hacer un slice en la distribución
+espacio_pantalones = X_train[[atributo1, atributo2, atributo3]]
 
-# Para el KNN vamos a trabajar primero
 
-# Búsqueda de la mejor cantidad de vecinos
-hyper_params = {'n_neighbors' : [4,5,6,7,8,9,10,11,12]}
-neigh = KNeighborsRegressor()
-clf = GridSearchCV(estimator=neigh, param_grid=hyper_params, cv = 5)
-search = clf.fit(X_train, y_train)
-search.best_params_
-search.best_score_
+
+# mangas remera
+
+atributo1 = 'pixel231'
+atriibuto2 = 'pixel247'
+atributo3 = 'pixel92'
+atributo4 = 'pixel105'
+
+mangas_remera = X_train[[atributo1, atributo2, atributo3, atributo4]]
+
+# primeros
+
+primeros_pixeles = X_train[['pixel1', 'pixel2', 'pixel3']]
+# ultimos
+
+ultimos_pixeles = X_train[['pixel784', 'pixel783', 'pixel782']]
+# random
+random.seed(0)
+numeros_random = [random.randint(1, 785) for _ in range(3)]
+
+
+pixeles_random = X_train[[f'pixel{numeros_random[0]}', f'pixel{numeros_random[1]}', f'pixel{numeros_random[2]}']]
+# KNNs
+X_trains_armados = [max_medias, max_diferencias, espacio_pantalones, mangas_remera, primeros_pixeles, ultimos_pixeles, pixeles_random]
+resultados = []
+for i in range(7):
+    hyper_params = {'n_neighbors' : [10,11,12,13,14,15,16,17,18,19,20]}
+    neigh = KNeighborsRegressor()
+    clf = GridSearchCV(estimator=neigh, param_grid=hyper_params, cv = 5)
+    search = clf.fit(X_trains_armados[i], y_train)
+    resultados.append(search.best_params_)
+    resultados.append(search.best_score_)
+
+
+# graficar
+print(resultados)
+
+X_trains_armados = ['max_medias', 'max_diferencias', 'espacio_pantalones', 'mangas_remera', 'primeros_pixeles', 'ultimos_pixeles', 'pixeles_random']
+resultado = pd.DataFrame(columns=['nombre_subconjunto', 'mejor_k', 'mejor_score'])
+for i in range(7):
+    resultado.at[i, 'nombre_subconjunto'] = str(X_trains_armados[i])
+    resultado.at[i, 'mejor_k'] = resultados[2*i]['n_neighbors']
+    resultado.at[i, 'mejor_score'] = resultados[2*i+1]
+
+print(resultado)
+
+
+# probamos para distinta cantidad de atributos
+atributos_prueba = []
+for cant_atributos in [7,74,185,371,557]:
+    diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
+    diferencias = diferencias.drop(columns = 'label')
+    diferencias = diferencias[diferencias['pixel1'] < 0] # me quedo con la fila de numeros
+    diferencias = diferencias.abs()
+    atributos = []
+    for _ in range(cant_atributos):
+        atributo = diferencias.idxmax(axis='columns')[1]
+        diferencias = diferencias.drop(columns = atributo)
+        atributos.append(atributo)
+    atributos_prueba.append(atributos)
+
+scores = []
+for i in range(5):
+    max_diferencias = X_train[atributos_prueba[i]]
+    test = X_test[atributos_prueba[i]]
+    kneigh = KNeighborsRegressor(n_neighbors=1)
+    kneigh.fit(max_diferencias, y_train)
+    scores.append(kneigh.score(test, y_test))
+    
+plt.scatter([7,74,185,371,557], scores)
 
 # d)
 
@@ -367,7 +434,7 @@ del X, y, X_train, X_test, y_train, y_test
 X = fashion_mnist_limpio.drop(columns = ['label'])
 y = fashion_mnist[['label']]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.20, random_state= 7, stratify= y)
+X_train, X_test, y_train, y_test = train_test_split(X, y , test_size= 0.15, random_state= 7, stratify= y)
 #%%
 # Armamos el modelo y evaluamos cuál conviene más
 
@@ -389,20 +456,3 @@ arbol.predict(X_test, y_test)
 
 # Medir precisión y recall???
 del X, y, X_train, X_test, y_train, y_test
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
