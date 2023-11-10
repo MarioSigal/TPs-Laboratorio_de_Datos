@@ -312,7 +312,7 @@ pixel_max_pantalones = pixel_max_pantalones[1]
 max_medias= X_train[[pixel_max_remeras, pixel_max_pantalones, max_dif]]
 
 # =============================================================================
-# Maxima diferencia y minima diferencia promedio, algo más...
+# Maxima diferencia
 
 diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
 diferencias = diferencias.drop(columns = 'label')
