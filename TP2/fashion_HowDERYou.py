@@ -394,9 +394,7 @@ for i in range(7):
     resultado.at[i, 'nombre_subconjunto'] = str(X_trains_armados[i])
     resultado.at[i, 'mejor_k'] = resultados[2*i]['n_neighbors']
     resultado.at[i, 'mejor_score'] = resultados[2*i+1]
-
 print(resultado)
-
 
 # probamos para distinta cantidad de atributos
 atributos_prueba = []
@@ -416,15 +414,41 @@ scores = []
 for i in range(5):
     max_diferencias = X_train[atributos_prueba[i]]
     test = X_test[atributos_prueba[i]]
-    kneigh = KNeighborsRegressor(n_neighbors=1)
+    kneigh = KNeighborsRegressor(n_neighbors=18)
     kneigh.fit(max_diferencias, y_train)
     scores.append(kneigh.score(test, y_test))
     
 plt.scatter([7,74,185,371,557], scores)
-
+plt.xlabel('Cantidad de atributos utilizados')
+plt.ylabel('Score')
+plt.title('Presición de KNN por cantidad de atributos')
+#%%
 # d)
+atributos_prueba = []
+for cant_atributos in range(1,785):
+    diferencias = fashion_mnist_promedios_prenda[fashion_mnist_promedios_prenda['label'] <= 1].diff(axis=0)
+    diferencias = diferencias.drop(columns = 'label')
+    diferencias = diferencias[diferencias['pixel1'] < 0] # me quedo con la fila de numeros
+    diferencias = diferencias.abs()
+    atributos = []
+    for _ in range(cant_atributos):
+        atributo = diferencias.idxmax(axis='columns')[1]
+        diferencias = diferencias.drop(columns = atributo)
+        atributos.append(atributo)
+    atributos_prueba.append(atributos)
 
-# e)
+
+            
+   
+scores = []
+for i in range(1,785):
+    max_diferencias = X_train[atributos_prueba[i]]
+    test = X_test[atributos_prueba[i]]
+    for k in range(50):
+        kneigh = KNeighborsRegressor(n_neighbors=k)
+        kneigh.fit(max_diferencias, y_train)
+        scores.append(kneigh.score(test, y_test))
+            
 
 del X, y, X_train, X_test, y_train, y_test
 
