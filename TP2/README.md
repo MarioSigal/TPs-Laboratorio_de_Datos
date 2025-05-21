@@ -1,4 +1,4 @@
-# Trabajo Práctico 2: Clasificación y validación cruzada.
+# Trabajo Práctico 2: Modelos de Clasificación y validación cruzada.
 ### Grupo HowDERyou
  integrantes:
   - Azul Barracchia
